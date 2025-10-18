@@ -7,6 +7,7 @@ interface FeatureGridProps {
 }
 
 export default function FeatureGrid({ featureIndex, onClickFeature }: FeatureGridProps) {
+  console.log("FeatureGrid props:", { featureIndex, onClickFeature });
   return (
     <div>
       Feature Grid Component

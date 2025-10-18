@@ -1,27 +1,35 @@
 import React from 'react';
-import { EventDataType } from '../types/eventDataType';
+import { EventType } from "../types/eventType";
 
 // Define the props type
 interface EventFormProps {
+  eventData: EventType;
+  possibleEvents: string[];
   possibleFeatures: string[];
   selectedFeatures: string[];
-  lockInEvent: (eventData: EventDataType) => void;
+  getFeatures: (
+    eventType: string,
+    date: Date,
+    location: string,
+    price: string,
+    attendees: string
+  ) => Promise<void>;
+  lockInEvent: (eventData: EventType) => void;
+  updateEvent: (eventData: EventType) => void;
+  updateSelectedFeatures: (features: string[]) => void;
 }
 
 // Correct usage
-function EventForm({ possibleFeatures, selectedFeatures, lockInEvent }: EventFormProps) {
-    const [whichSection, setWhichSection] = React.useState<1|2|3|4>(1);
-    const [selectedEvent, setSelectedEvent] = React.useState<string>('');
-    const [date, setDate] = React.useState<string>('');
-    const [location, setLocation] = React.useState<string>('');
-    const [priceRange, setPriceRange] = React.useState<string>('');
-    const [attendeesRange, setAttendeesRange] = React.useState<number>(0);
-
-    return (
-        <div>
-            Event Form Component
-        </div>
-    );
+function EventForm({
+  eventData,
+  possibleEvents,
+  possibleFeatures,
+  selectedFeatures,
+  lockInEvent,
+  getFeatures,
+  updateEvent,
+}: EventFormProps) {
+  return <div>Event Form Component</div>;
 }
 
 export default EventForm;

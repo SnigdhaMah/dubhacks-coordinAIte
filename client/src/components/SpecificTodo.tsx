@@ -7,6 +7,7 @@ interface SpecificTodoProps {
 }
 
 export default function SpecificTodo({ todo, updateTodo }: SpecificTodoProps) {
+  console.log("SpecificTodo props:", { todo, updateTodo });
   return (
     <div>
       Specific Todo Component

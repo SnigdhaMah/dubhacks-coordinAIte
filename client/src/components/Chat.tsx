@@ -3,13 +3,14 @@ import { ChatMessage } from '../types/chatType';
 
 interface ChatProps {
   messages: ChatMessage[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: ChatMessage) => void;
 }
 
 export default function Chat({ messages, onSendMessage }: ChatProps) {
-  return (
-    <div>
-      Chat Component
-    </div>
-  )
+  console.log(
+    "Chat component rendered with messages:",
+    messages,
+    onSendMessage
+  );
+  return <div>Chat Component</div>;
 }

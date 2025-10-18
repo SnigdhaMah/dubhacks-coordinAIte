@@ -3,13 +3,10 @@ import { TodoType } from '../types/todoType';
 
 interface TodosProps {
   todos: TodoType[];
-  onClickTodo: (todo: string) => void;
+  onClickTodo: (todo: TodoType) => void;
 }
 
 export default function Todos({ todos, onClickTodo }: TodosProps) {
-  return (
-    <div>
-      Todos Component
-    </div>
-  )
+  console.log("Todos props:", { todos, onClickTodo });
+  return <div>Todos Component</div>;
 }

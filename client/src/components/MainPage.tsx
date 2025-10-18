@@ -7,7 +7,7 @@ import { TodoType } from '../types/todoType';
 interface MainPageProps {
   // for Todos
   todos: TodoType[];
-  onClickTodo: (todo: string) => void;
+  onClickTodo: (todo: TodoType) => void;
   // for Feature Grid
   featureIndex: FeatureType[];
   onClickFeature: (feature: FeatureType) => void;
