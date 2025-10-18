@@ -5,6 +5,7 @@ import { FeatureType, Recommendation } from "./types/featureType";
 import EventForm from "./components/EventForm";
 import {
   chatResp,
+  getEventTypes,
   // getEventTypes,
   getFeatureOptionRecs,
   getPossibleFeatures,
@@ -206,7 +207,7 @@ function App() {
   useEffect(() => {
     // on initial load, get possible event types from server
     const fetchEventTypes = async () => {
-      const events = ["hello"]; //await getEventTypes();
+      const events = await getEventTypes();
       setPossibleEvents(events);
     };
     fetchEventTypes();
