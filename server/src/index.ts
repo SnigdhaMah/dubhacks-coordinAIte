@@ -30,7 +30,7 @@ app.get("/api/getEventTypes", getEventTypes);
 app.post("/api/resetEventInfo", resetEventInfo);
 
 // get AI generated image based on the event details, selected features, and more
-app.post("/api/generateImage", generateImage);
+app.get("/api/generateImage", generateImage);
 
 // get Chatbot Response for when user talks to the chatbot
 app.post("/api/chatResp", chatResp);
@@ -40,5 +40,7 @@ app.get("/api/getListTodos", getListTodos);
 
 // send new Todo to server
 app.post("api/updateTodo", updateTodo);
+
+app.post("api/recommendationClicked", recommendationClicked);
 
 app.listen(port, () => console.log(`Server listening on ${port}`));

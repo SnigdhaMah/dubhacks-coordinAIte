@@ -24,7 +24,8 @@ export default function SpecificFeature({
     feature,
     onSelectedRecommneded,
     messages,
-    onSendMessage
+    onSendMessage,
+    onConfirm
   );
   return (
     <div>

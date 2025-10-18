@@ -1,5 +1,5 @@
 import { EventType } from "../types/eventType";
-import { FeatureType, Recommendation } from "../types/featureType";
+import { Recommendation } from "../types/featureType";
 import { ChatMessage } from "../types/chatType";
 import { TodoType } from "../types/todoType";
 
@@ -36,36 +36,82 @@ export const getPossibleFeatures = async (
   }
 };
 
+// on the specific feature page, get the options/recommendations for the selected feature
 export const getFeatureOptionRecs = async (
-  selectedFeature: string
+  selectedFeature: string // the feature title (e.g.cake)
 ): Promise<Recommendation[]> => {
-  return [];
+  // make a POST request to the server with the event data
+  const response = await fetch(`/api/featureOptionRecs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(selectedFeature),
+  });
+  return response.json().then((data) => data.recommendations);
 };
 
+// get all the event options for the user to select in the form
 export const getEventTypes = async (): Promise<string[]> => {
-  return [];
+  const response = await fetch(`/api/getEventTypes`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json().then((data) => data.list);
 };
 
 export const resetEventInfo = async (): Promise<boolean> => {
+  await fetch(`/api/resetEventInfo`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   return true;
 };
 
 export const generateImage = async (): Promise<Base64URLString> => {
-  return "";
+  const response = await fetch(`/api/generateImage`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json().then((data) => data.image as Base64URLString);
 };
 
 export const chatResp = async (
   chatmsgs: ChatMessage[],
   currRecs: Recommendation[]
 ): Promise<{ response: string; newRecs?: Recommendation[] }> => {
-  return { response: "Hello!" };
+  const response = await fetch(`/api/chatResp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ messages: chatmsgs, currentRecs: currRecs }),
+  });
+  return response.json().then((data) => ({
+    response: data.response,
+    newRecs: data.newRecs,
+  }));
 };
 
 export const recommendationClicked = async (
   feature: string,
   rec: Recommendation
 ): Promise<TodoType[]> => {
-  return [];
+  // send the clicked recommendation to the server and get back the updated todo list
+  const response = await fetch(`/api/recommendationClicked`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ feature: feature, recommendation: rec }),
+  });
+  return response.json().then((data) => data.todos as TodoType[]);
 };
 
 export const updateTodoRoute = async (
@@ -73,5 +119,12 @@ export const updateTodoRoute = async (
   todo: TodoType
 ): Promise<boolean> => {
   // update the server's todos
+  await fetch(`/api/updateTodo`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ feature: feature, todo: todo }),
+  });
   return true;
 };
