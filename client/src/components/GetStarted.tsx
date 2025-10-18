@@ -1,5 +1,4 @@
 import React from "react";
-import "./GetStarted.css";
 
 type GetStartedProps = {
   goToNextPage: () => void;
@@ -8,20 +7,30 @@ type GetStartedProps = {
 export default function GetStarted({ goToNextPage }: GetStartedProps) {
   return (
     <div className="get-started-container">
-      <img
-        src={require("../img/get-started-bg.png")}
-        alt="Background"
+      {/* Background image - replace with your actual image path */}
+      <div
         className="get-started-bg"
-      />
-      <button
-        className="get-started-btn"
-        onClick={goToNextPage}
         style={{
-          backgroundImage: `url(${require("../img/get-started-button.png")})`,
+          backgroundImage:
+            "url(https://i.pinimg.com/736x/39/3d/97/393d97e8792a0538413b7246c0e514b0.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          width: "100%",
+          height: "100vh",
+          position: "relative",
         }}
       >
-        Start
-      </button>
+        {/* Overlay for better text contrast */}
+        <div className="overlay"></div>
+
+        {/* Content */}
+        <div className="content-container">
+          <h1 className="welcome-text">Welcome to Coordin-ai-te</h1>
+          <button className="get-started-btn" onClick={goToNextPage}>
+            Start
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -72,14 +72,14 @@ export const resetEventInfo = async (): Promise<boolean> => {
   return true;
 };
 
-export const generateImage = async (): Promise<Base64URLString> => {
+export const generateImage = async (): Promise<string> => {
   const response = await fetch(`/api/generateImage`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
-  return response.json().then((data) => data.image as Base64URLString);
+  return response.json().then((data) => data.image as string);
 };
 
 export const chatResp = async (

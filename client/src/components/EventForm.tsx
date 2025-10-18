@@ -29,6 +29,15 @@ function EventForm({
   getFeatures,
   updateEvent,
 }: EventFormProps) {
+  console.log("EventForm props:", {
+    eventData,
+    possibleEvents,
+    possibleFeatures,
+    selectedFeatures,
+    lockInEvent,
+    getFeatures,
+    updateEvent,
+  });
   return <div>Event Form Component</div>;
 }
 
