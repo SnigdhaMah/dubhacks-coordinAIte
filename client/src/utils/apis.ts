@@ -1,5 +1,5 @@
 import { EventType } from "../types/eventType";
-import { Recommendation } from "../types/featureType";
+import { FeatureType, Recommendation } from "../types/featureType";
 import { ChatMessage } from "../types/chatType";
 import { TodoType } from "../types/todoType";
 
@@ -38,7 +38,9 @@ export const getPossibleFeatures = async (
 
 // on the specific feature page, get the options/recommendations for the selected feature
 export const getFeatureOptionRecs = async (
-  selectedFeature: string // the feature title (e.g.cake)
+  selectedFeature: string, // the feature title (e.g.cake)
+  chatmsgs: ChatMessage[],
+  currRecs: Recommendation[]
 ): Promise<Recommendation[]> => {
   // make a POST request to the server with the event data
   const response = await fetch(`/api/featureOptionRecs`, {
@@ -46,7 +48,7 @@ export const getFeatureOptionRecs = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(selectedFeature),
+    body: JSON.stringify({ selectedFeature, chatmsgs, currRecs }),
   });
   return response.json().then((data) => data.recommendations);
 };
@@ -72,26 +74,34 @@ export const resetEventInfo = async (): Promise<boolean> => {
   return true;
 };
 
-export const generateImage = async (): Promise<string> => {
+export const generateImage = async (
+  featureIndex: FeatureType[]
+): Promise<string> => {
   const response = await fetch(`/api/generateImage`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ featureIndex }),
   });
   return response.json().then((data) => data.image as string);
 };
 
 export const chatResp = async (
   chatmsgs: ChatMessage[],
-  currRecs: Recommendation[]
+  currRecs: Recommendation[],
+  feature: string
 ): Promise<{ response: string; newRecs?: Recommendation[] }> => {
   const response = await fetch(`/api/chatResp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ messages: chatmsgs, currentRecs: currRecs }),
+    body: JSON.stringify({
+      feature,
+      messages: chatmsgs,
+      currentRecs: currRecs,
+    }),
   });
   return response.json().then((data) => ({
     response: data.response,

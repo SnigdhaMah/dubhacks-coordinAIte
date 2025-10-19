@@ -5,6 +5,7 @@ import { FeatureType, Recommendation } from "./types/featureType";
 import EventForm from "./components/EventForm";
 import {
   chatResp,
+  getEventTypes,
   // getEventTypes,
   getFeatureOptionRecs,
   getPossibleFeatures,
@@ -123,7 +124,11 @@ function App() {
   // feature helpers
   const onClickFeature = async (feature: FeatureType) => {
     // based on the feature passed, call setCurrPage("SpecificFeature") and setCurrFeature(feature) so that we go to the SpecificFeature page with the specified feature displayed
-    const recommendations = await getFeatureOptionRecs(feature.featureTitle);
+    const recommendations = await getFeatureOptionRecs(
+      feature.featureTitle,
+      messages,
+      feature.recommended
+    );
     feature.recommended = recommendations;
     setCurrFeature(feature);
     setCurrentStage("SPECIFIC FEATURE");
@@ -167,7 +172,11 @@ function App() {
     setMessages(newMessages);
     // Then, we will call the server with (feature, messages, current recommendations)
     // which will return us a chat response as well as updated recommendations.
-    const resp = await chatResp(newMessages, currFeature?.recommended || []);
+    const resp = await chatResp(
+      newMessages,
+      currFeature?.recommended || [],
+      currFeature?.featureTitle || ""
+    );
     // Update featurIndex[feature].recommendations and setMessage([whatever it was before + ai response).
     const aiMessage: ChatMessage = {
       sender: "bot",
@@ -198,7 +207,7 @@ function App() {
   useEffect(() => {
     // on initial load, get possible event types from server
     const fetchEventTypes = async () => {
-      const events = ["hello","Wedding"]; //await getEventTypes();
+      const events = await getEventTypes();
       setPossibleEvents(events);
     };
     fetchEventTypes();

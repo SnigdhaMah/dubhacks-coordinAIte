@@ -6,8 +6,8 @@ import {
   getEventTypes,
   getPossibleFeatures,
   getFeatureOptionRecs,
-  getListTodos,
   resetEventInfo,
+  recommendationClicked,
 } from "./routes";
 import bodyParser from "body-parser";
 
@@ -34,9 +34,6 @@ app.get("/api/generateImage", generateImage);
 
 // get Chatbot Response for when user talks to the chatbot
 app.post("/api/chatResp", chatResp);
-
-// get the list of todos (all the selected stuff that the user has "locked in")
-app.get("/api/getListTodos", getListTodos);
 
 // send new Todo to server
 app.post("api/updateTodo", updateTodo);
