@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventType } from "../types/eventType";
 
 interface EventFormProps {
@@ -6,12 +6,8 @@ interface EventFormProps {
   possibleEvents: string[];
   possibleFeatures: string[];
   selectedFeatures: string[];
-  getFeatures: (
-    eventType: string,
-    date: Date,
-    location: string,
-    price: string,
-    attendees: string
+  getFeatures: 
+     (eventData: EventType
   ) => Promise<void>;
   lockInEvent: (eventData: EventType) => void;
   updateEvent: (eventData: EventType) => void;
@@ -54,6 +50,19 @@ function EventForm({
       updateEvent({ ...eventData, date });
     }
   };
+
+  useEffect(() => {
+    if (
+    eventData.eventType != "" &&
+    eventData.date != new Date() &&
+    eventData.location != "" &&
+    eventData.price != "" &&
+    eventData.attendees != "") {
+      // get the features based on the filled in info
+      getFeatures(eventData);
+    }
+
+  }, [eventData])
 
   // Handle price range change
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

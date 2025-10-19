@@ -67,23 +67,12 @@ function App() {
 
   // getFeatures: fetch features / recommendations for a given event context
   const getFeatures = async (
-    eventType: string,
-    date: Date,
-    location: string,
-    price: string,
-    attendees: string
+    eventData: EventType
   ) => {
     // will call the server with the passed in parameters to get an response like
     // {allFeatures: string[], recommendedFeatures: string[] }.
     // The function will use the server's response to call setSelectedFeatures and setPossibleFeatures accordingly.
     try {
-      const eventData: EventType = {
-        eventType,
-        date,
-        location,
-        price,
-        attendees,
-      };
       const resp = await getPossibleFeatures(eventData); // {allFeatures: string[], recommendedFeatures: string[] }.
       setSelectedFeatures(resp.recommendedFeatures);
       setPossibleFeatures(resp.allFeatures);
