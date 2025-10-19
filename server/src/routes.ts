@@ -41,9 +41,9 @@ type GeneralResponse = Response; // only writing, so no need to check
 type PossibleFeaturesRequest = Request<{}, {}, EventType>;
 type PossibleFeaturesResponse = Response<
   | {
-      allFeatures: string[];
-      recommendedFeatures: string[];
-    }
+    allFeatures: string[];
+    recommendedFeatures: string[];
+  }
   | { error: string }
 >;
 
@@ -76,9 +76,9 @@ type ChatbotRequest = Request<
 >;
 type ChatbotResponse = Response<
   | {
-      response: string;
-      newRecs?: Recommendation[];
-    }
+    response: string;
+    newRecs?: Recommendation[];
+  }
   | { error: string }
 >;
 
@@ -102,56 +102,78 @@ export const getPossibleFeatures = async (
   res: PossibleFeaturesResponse
 ): Promise<PossibleFeaturesResponse> => {
   try {
-    // Extract data from request body
     const eventData = req.body;
-
     console.log("Received event data:", eventData);
 
-    // Validate required fields
-    const requiredFields = ["eventType"];
-
-    if (requiredFields.length === 0) {
-      return res.status(400).json({
-        error: "Missing required event data fields",
-      });
+    const requiredFields: (keyof EventType)[] = ["eventType"]; ["eventType"];
+    for (const field of requiredFields) {
+      if (!eventData[field]) {
+        return res.status(400).json({
+          error: `Missing required field: ${field}`,
+        });
+      }
     }
 
-    // call AI service to get feature recommendations based on the event Data
     const prompt = getFeatureSelectionPrompt(eventData);
+
     const resp = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       config: {
         systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            recommended: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+            },
+          },
+          required: ["recommended"],
+        },
       },
       contents: prompt,
     });
-    if (!resp?.text) {
+
+    console.log("Receieved gemini response  for getPossibleFeatures");
+
+    const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!jsonString) {
       return res.status(500).json({
-        error: "No text response from AI model" + resp,
-      });
-    } else if (!("recommended" in JSON.parse(resp.text))) {
-      return res.status(500).json({
-        error: "Invalid response format from AI model" + resp.text,
+        error: "No valid response from AI model",
       });
     }
-    const recommendedFeatures: string[] = [
-      "Venue",
-      ...JSON.parse(resp.text).recommended,
-    ].filter((item, pos, arr) => arr.indexOf(item) === pos); // add "Venue" as default recommended feature and remove duplicates
 
-    // Send response back to client
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonString);
+    } catch (err) {
+      return res.status(500).json({
+        error: "Failed to parse JSON: " + (err as Error).message
+      });
+    }
+
+    console.log(parsed);
+
+    const allFeatures: string[] = parsed.allFeatures;
+    const recommendedFeatures: string[] = [
+      "Venue", // default feature
+      ...parsed.recommended,
+    ].filter((item, pos, arr) => arr.indexOf(item) === pos); // remove duplicates
+
     return res.json({
       allFeatures,
       recommendedFeatures,
     });
   } catch (error: any) {
-    console.error("❌ Error in getFeatureRecommendations:", error);
-
+    console.error("❌ Error in getPossibleFeatures:", error);
     return res.status(500).json({
-      error: "Failed to generate recommendations" + error.message,
+      error: "Failed to generate recommendations: " + error.message,
     });
   }
 };
+
 
 // // get the recommended options for a single selected feature
 // app.post("/api/featureOptionRecs", getFeatureOptionRecs)
@@ -224,24 +246,28 @@ export const getFeatureOptionRecs = async (
       },
       contents: prompt,
     });
-    const aiOptions = JSON.stringify(
-      resp?.candidates?.[0]?.content?.parts?.[0]?.text || "No valid response"
-    );
-    if (aiOptions == "No valid response") {
+    const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("it worked!")
+    if (!jsonString) {
       return res.status(500).json({
-        error: "Invalid response format from AI model" + resp,
+        error: "No valid response from AI model",
       });
     }
-    const cleaned = aiOptions
-      .replace(/^```json\\n/i, "")
-      .replace(/```$/, "")
-      .replace(/\\n/g, "\n")
-      .trim();
-    const recommendations: Recommendation[] =
-      JSON.parse(cleaned).recommendations;
 
-    // Send response back to client
-    return res.json({ recommendations: recommendations });
+    try {
+      const parsed = JSON.parse(jsonString); // <-- parse raw JSON
+
+      console.log(parsed);
+      const recommendations = parsed.recommendations;
+
+      return res.json({ recommendations });
+    } catch (err) {
+      return res.status(500).json({
+        error: "Failed to parse JSON: " + (err as Error).message,
+
+      });
+    }
+
   } catch (error: any) {
     console.error("❌ Error in getFeatureOptionRecs:", error);
     return res.status(500).json({
@@ -305,7 +331,7 @@ export const generateImage = async (
     return res.json({
       generatedImage:
         imageData.generatedImages &&
-        imageData.generatedImages[0].image?.imageBytes !== undefined
+          imageData.generatedImages[0].image?.imageBytes !== undefined
           ? imageData.generatedImages[0].image.imageBytes
           : null,
     });
@@ -376,6 +402,7 @@ export const updateTodo = async (
 ) => {
   // get the feature and todo from the request body
   const { feature, todo } = req.body;
+  console.log("In updateTodo");
   // update the todos map
   todos.set(feature, todo);
   // return success
@@ -394,47 +421,70 @@ export const recommendationClicked = async (
 ): Promise<TodoListResponse> => {
   const { feature, clickedRec } = req.body;
 
+  console.log("In recommendation Clicked");
   selectedFeatures.set(feature, clickedRec);
 
   const prompt = getTodoCreationPrompt(clickedRec);
+
   const resp = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     config: {
       systemInstruction: systemPrompt,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          todo: { type: Type.STRING },
+          description: { type: Type.STRING },
+          type: {
+            type: Type.STRING,
+            enum: ["invite", "book", "generic"],
+          },
+        },
+        required: ["todo", "description", "type"],
+      },
     },
     contents: prompt,
   });
-  if (!resp?.text) {
+
+  console.log("Recommnedation clicked ai response loaded!")
+  const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
+  console.log("it worked!")
+  if (!jsonString) {
     return res.status(500).json({
-      error: "No text response from AI model" + resp,
-    });
-  } else if (!("todo" in JSON.parse(resp.text))) {
-    return res.status(500).json({
-      error: "Invalid response format from AI model" + resp.text,
+      error: "No valid response from AI model",
     });
   }
-  const todoText: {
-    todo: string;
-    description: string;
-    type: "invite" | "book" | "generic";
-  } = JSON.parse(resp.text);
 
-  const newTodo: TodoType = {
-    uid: `${feature}-${Date.now()}`,
-    feature: feature,
-    todo: todoText.todo,
-    description: todoText.description,
-    notes: "",
-    completed: false,
-    type: todoText.type,
-  };
-  // for the clicked recommendation, generate expected todos and save them as a TodoType
-  // into the todos map
-  todos.set(feature, newTodo);
+    try {
+    const todoText: {
+      todo: string;
+      description: string;
+      type: "invite" | "book" | "generic";
+    } = JSON.parse(jsonString);
 
-  const newTodosArray: TodoType[] = Array.from(todos.values());
+    const newTodo: TodoType = {
+      uid: `${feature}-${Date.now()}`,
+      feature: feature,
+      todo: todoText.todo,
+      description: todoText.description,
+      notes: "",
+      completed: false,
+      type: todoText.type,
+    };
+    // for the clicked recommendation, generate expected todos and save them as a TodoType
+    // into the todos map
+    todos.set(feature, newTodo);
 
-  return res.json({ newTodos: newTodosArray });
+    const newTodosArray: TodoType[] = Array.from(todos.values());
+
+    return res.json({ newTodos: newTodosArray });
+  } catch (error: any) {
+    console.error("❌ Error in recommendationClicke:", error);
+    return res.status(500).json({
+      error: "Failed to generate recommendations" + error.message,
+    });
+  }
 };
 
 const events: string[] = [

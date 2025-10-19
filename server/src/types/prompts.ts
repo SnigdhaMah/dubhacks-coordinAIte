@@ -47,6 +47,7 @@ Return a list of three recommendations as a string array in the JSON format:
 {recommendations: [{recommendation1}, {recommendation2}, {recommendation3}]}.
 The three recommendations MUST be unique and NOT already present in <currRecs> 
 and must be real world options that users can book or use for their event. All recommendations should have valid links and images.
+THE RESPONSE FOR EACH FIELD MUST BE LESS THAN 150 CHARACTERS.
 
 Context:
 <eventData>: ${eventData}
