@@ -45,6 +45,22 @@ function EventForm({
     );
   };
 
+  const callServer = () => {
+    if (
+      !calledServer &&
+      eventData.eventType !== "" &&
+      eventData.date.toString() !== new Date().toString() &&
+      eventData.location !== "" &&
+      eventData.price !== "" &&
+      eventData.attendees !== ""
+    ) {
+      // get the features based on the filled in info
+      // alert(`calling with` + eventData);
+      getFeatures(eventData);
+      calledServer = true;
+    }
+  };
+
   useEffect(() => {
     const fetchFeatures = async () => {
       if (!calledServer && isFormComplete()) {
@@ -200,7 +216,7 @@ function EventForm({
           position: "relative",
         }}
       >
-        <div
+        {/* <div
           style={{
             backgroundColor: "#D9D9D9",
             height: "100px",
@@ -212,7 +228,16 @@ function EventForm({
             transform: "translateY(-50%)",
           }}
           aria-hidden="true"
-        />
+        /> */}
+        <img src={"https://i.pinimg.com/736x/39/3d/97/393d97e8792a0538413b7246c0e514b0.jpg"}
+        style={{
+            height: "100px",
+            width: "100px",
+            borderRadius: "50%",
+            position: "absolute",
+            left: "40px",
+            top: "50%",
+            transform: "translateY(-50%)"}}/>
         <div
           style={{
             position: "absolute",
@@ -247,11 +272,11 @@ function EventForm({
       <div
         style={{
           marginTop: "75px",
-          textAlign: "left",
+          textAlign: "center",
           fontSize: "32px",
           fontWeight: "normal",
           position: "relative",
-          paddingLeft: "275px",
+          // paddingLeft: "275px",
         }}
       >
         <h1 className="event-form-question-text">
@@ -261,8 +286,11 @@ function EventForm({
       <div
         style={{
           textAlign: "left",
-          paddingLeft: "275px",
-          marginTop: "20px",
+          paddingLeft: "450px",
+            marginTop: "20px",
+            alignSelf: "center",
+            justifyContent: "center",
+            alignContent:"center",
         }}
       >
         <select
@@ -273,6 +301,7 @@ function EventForm({
             padding: "10px",
             fontSize: "18px",
             borderRadius: "100px",
+            alignSelf: "center"
           }}
           value={eventData.eventType || ""}
           onChange={(e) =>
@@ -359,6 +388,7 @@ function EventForm({
                 padding: "10px",
                 fontSize: "18px",
                 borderRadius: "100px",
+                borderWidth: "0px",
                 cursor: "pointer",
                 marginRight: "100px",
               }}
@@ -389,6 +419,7 @@ function EventForm({
                 padding: "10px",
                 fontSize: "18px",
                 borderRadius: "100px",
+                borderWidth: "0px",
                 cursor: "pointer",
                 marginRight: "100px",
               }}
@@ -412,6 +443,7 @@ function EventForm({
                 padding: "10px",
                 fontSize: "18px",
                 borderRadius: "100px",
+                borderWidth: "0px",
                 cursor: "pointer",
                 marginRight: "100px",
               }}
@@ -449,7 +481,7 @@ function EventForm({
               style={{
                 marginTop: "40px",
                 padding: "40px 60px",
-                backgroundColor: "#E8E8E8",
+                backgroundColor: "#C2C2B6",
                 borderRadius: "10px",
                 marginRight: "100px",
               }}
@@ -805,8 +837,45 @@ function EventForm({
                 );
               })}
             </div>
-
-            {/* Submit Button */}
+            {/* Force Get Features Button */}
+            <div
+              style={{
+                marginTop: "40px",
+                // display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection:"column"
+              }}
+            >
+              <button
+                onClick={() => callServer()}
+                style={{
+                  backgroundColor: "#EFD7D5",
+                  color: "#4B3831",
+                  border: "2px solid #D29C9A",
+                  borderRadius: "50px",
+                  padding: "12px 40px",
+                  fontSize: "16px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  marginRight: "100px",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = "#D29C9A";
+                  e.currentTarget.style.color = "white";
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = "#EFD7D5";
+                  e.currentTarget.style.color = "#4B3831";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              >
+                Refresh Feature Recommendations
+              </button>
+            
+            {/* Submit Button - Show only when features are available */}
             <button
               onClick={() => lockInEvent(eventData)}
               style={{
@@ -832,6 +901,7 @@ function EventForm({
             >
               Submit
             </button>
+            </div>
           </>
         ) : (
           // EMPTY STATE - Form not complete

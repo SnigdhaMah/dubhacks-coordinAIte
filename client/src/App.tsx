@@ -107,7 +107,7 @@ function AppContent() {
       feature.recommended
     );
 
-    alert(JSON.stringify(recommendations));
+    alert("Your recommendations are ready!");
     feature.recommended = recommendations;
     
     const updatedFeatureIndex = featureIndex.map((f) => {
@@ -126,8 +126,23 @@ function AppContent() {
     goToGeneratedImage();
   };
 
-  const onSelectRecommendedFeature = async (recommendation: Recommendation) => {
+  const onSelectRecommendedFeature = async (recommendation: Recommendation, remove?: true) => {
     try {
+      if (remove) {
+        // update feature index
+        const updatedFeatureIndex = featureIndex.map((feature) => {
+          if (feature.uid === currFeature.uid) {
+            return {
+              ...feature,
+              selected: null,
+            };
+          } else {
+            return feature;
+          }
+      });
+      setFeatureIndex(updatedFeatureIndex);
+      }
+      // update feature index
       const updatedFeatureIndex = featureIndex.map((feature) => {
         if (feature.uid === currFeature.uid) {
           return {
@@ -144,7 +159,7 @@ function AppContent() {
         currFeature.featureTitle,
         recommendation
       );
-      alert(JSON.stringify(resp));
+      // alert(JSON.stringify(resp))
       if (resp) {
         console.log("received response from clicking recs");
         setTodos(resp);
@@ -167,8 +182,8 @@ function AppContent() {
       currFeature?.recommended || [],
       currFeature?.featureTitle || ""
     );
-    alert(JSON.stringify(resp));
-    
+    // alert(JSON.stringify(resp))
+    // Update featurIndex[feature].recommendations and setMessage([whatever it was before + ai response).
     const aiMessage: ChatMessage = {
       sender: "bot",
       message: resp.response,
