@@ -6,7 +6,6 @@ import EventForm from "./components/EventForm";
 import {
   chatResp,
   getEventTypes,
-  // getEventTypes,
   getFeatureOptionRecs,
   getPossibleFeatures,
   recommendationClicked,
@@ -133,6 +132,7 @@ function App() {
       messages,
       feature.recommended
     );
+    alert(JSON.stringify(recommendations));
     feature.recommended = recommendations;
     setCurrFeature(feature);
     setCurrentStage("SPECIFIC FEATURE");

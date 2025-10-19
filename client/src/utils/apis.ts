@@ -66,7 +66,9 @@ export const getFeatureOptionRecs = async (
     },
     body: JSON.stringify({ selectedFeature, chatmsgs, currRecs }),
   });
-  return response.json().then((data) => data.recommendations);
+  return response.json().then((data) => {
+    console.log("CLIENT GOT", data);
+    return data.recommendations});
 };
 
 // get all the event options for the user to select in the form

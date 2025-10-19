@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { TodoType } from "../types/todoType";
 
 interface SpecificTodoProps {
@@ -7,13 +7,6 @@ interface SpecificTodoProps {
 }
 
 export default function SpecificTodo({ todo, updateTodo }: SpecificTodoProps) {
-  const [notes, setNotes] = useState("");
-
-  useEffect(() => {
-    // Load notes from todo if they exist (you might want to add a notes field to TodoType)
-    setNotes("");
-  }, [todo]);
-
   if (!todo) {
     return (
       <div className="specific-todo-container empty">
@@ -36,7 +29,7 @@ export default function SpecificTodo({ todo, updateTodo }: SpecificTodoProps) {
   }
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNotes(e.target.value);
+    updateTodo({ ...todo, notes: e.target.value });
   };
 
   const getTypeLabel = (type: string) => {
@@ -122,7 +115,7 @@ export default function SpecificTodo({ todo, updateTodo }: SpecificTodoProps) {
           <textarea
             className="notes-textarea"
             placeholder="Add your notes here..."
-            value={notes}
+            value={todo.notes}
             onChange={handleNotesChange}
             rows={8}
           />

@@ -3,6 +3,7 @@ export type TodoType = {
   feature: string;
   todo: string;
   description: string;
+  notes: string;
   completed: boolean;
   type: "invite" | "book" | "generic";
 };

@@ -10,7 +10,7 @@ interface FeatureGridProps {
 export const testFeatureData: FeatureType[] = [
   {
     uid: "1",
-    featureTitle: "User Authentication",
+    featureTitle: "Cake",
     selected: { title: "test" },
     recommended: [],
   },
@@ -24,35 +24,37 @@ export default function FeatureGrid({
 
   return (
     <div className="feature-grid-container">
+      <h1 className="features-heading">features</h1>
       <div className="feature-grid">
         {testFeatureData.map((feature) => (
-          <div
-            key={feature.uid}
-            onClick={() => onClickFeature(feature)}
-            className="feature-card"
-          >
-            <h3 className="feature-title">{feature.featureTitle}</h3>
-
-            <div className="feature-info">
-              {feature.selected ? (
-                <div className="status-wrapper">
-                  <span className="status-badge selected">Selected</span>
-                </div>
-              ) : (
-                <div className="status-wrapper">
-                  <span className="status-badge unselected">No selection</span>
-                </div>
-              )}
-
-              {feature.recommended.length > 0 && (
-                <div className="recommendation-count">
-                  {feature.recommended.length} recommendation
-                  {feature.recommended.length !== 1 ? "s" : ""}
-                </div>
-              )}
-            </div>
+        <div
+          key={feature.uid}
+          className="feature-card"
+          onClick={() => onClickFeature(feature)}
+        >
+          {feature.selected && <button className="remove-button">×</button>}
+          
+          <div className="feature-image-section">
+            {feature.selected?.images && feature.selected.images.length > 0 ? (
+              <img
+                src={feature.selected.images[0]}
+                alt={feature.featureTitle}
+                className="feature-image"
+              />
+            ) : (
+              <div className="feature-image-placeholder"></div>
+            )}
           </div>
-        ))}
+          
+          <div className="feature-title-section">
+            <h3 className="feature-title">{feature.featureTitle}</h3>
+          </div>
+          
+          <div className="feature-action-section">
+            <p className="action-text">click here to choose a selection</p>
+          </div>
+        </div>
+      ))}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { EventType } from "./types/eventType";
 import { ChatMessage } from "./types/chatType";
 import { Recommendation, FeatureType } from "./types/featureType";
 import { TodoType } from "./types/todoType";
-import { GenerateImagesResponse, GoogleGenAI } from "@google/genai";
+import { GenerateImagesResponse, GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import {
   getChatbotResponsePrompt,
@@ -185,21 +185,60 @@ export const getFeatureOptionRecs = async (
       model: "gemini-2.5-flash",
       config: {
         systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            recommendations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  bookingLink: { type: Type.STRING },
+                  images: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                  },
+                  price: { type: Type.STRING }, // or Type.NUMBER if you always want numeric
+                  date: { type: Type.STRING },
+                  color: { type: Type.STRING },
+                  contactInfo: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      phone: { type: Type.STRING },
+                      email: { type: Type.STRING },
+                      website: { type: Type.STRING },
+                    },
+                  },
+                  justification: { type: Type.STRING },
+                },
+                required: ["title"], // Only "title" is required
+              },
+            },
+          },
+          required: ["recommendations"],
+        },
       },
       contents: prompt,
     });
-    if (!resp?.text) {
+    const aiOptions = JSON.stringify(
+      resp?.candidates?.[0]?.content?.parts?.[0]?.text || "No valid response"
+    );
+    if (aiOptions == "No valid response") {
       return res.status(500).json({
-        error: "No text response from AI model" + resp,
-      });
-    } else if (!("recommendations" in JSON.parse(resp.text))) {
-      return res.status(500).json({
-        error: "Invalid response format from AI model" + resp.text,
+        error: "Invalid response format from AI model" + resp,
       });
     }
-    const recommendations: Recommendation[] = JSON.parse(
-      resp.text
-    ).recommendations;
+    const cleaned = aiOptions
+      .replace(/^```json\\n/i, "")
+      .replace(/```$/, "")
+      .replace(/\\n/g, "\n")
+      .trim();
+    const recommendations: Recommendation[] =
+      JSON.parse(cleaned).recommendations;
 
     // Send response back to client
     return res.json({ recommendations: recommendations });
@@ -385,6 +424,7 @@ export const recommendationClicked = async (
     feature: feature,
     todo: todoText.todo,
     description: todoText.description,
+    notes: "",
     completed: false,
     type: todoText.type,
   };
