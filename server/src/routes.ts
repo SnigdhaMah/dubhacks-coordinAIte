@@ -41,9 +41,9 @@ type GeneralResponse = Response; // only writing, so no need to check
 type PossibleFeaturesRequest = Request<{}, {}, EventType>;
 type PossibleFeaturesResponse = Response<
   | {
-    allFeatures: string[];
-    recommendedFeatures: string[];
-  }
+      allFeatures: string[];
+      recommendedFeatures: string[];
+    }
   | { error: string }
 >;
 
@@ -72,13 +72,17 @@ type ImageResponse = Response<
 type ChatbotRequest = Request<
   {},
   {},
-  { chatmsgs: ChatMessage[]; currRecs: Recommendation[] }
+  {
+    chatmsgs: ChatMessage[];
+    currRecs: Recommendation[];
+    feature: string;
+  }
 >;
 type ChatbotResponse = Response<
   | {
-    response: string;
-    newRecs?: Recommendation[];
-  }
+      response: string;
+      newRecs?: Recommendation[];
+    }
   | { error: string }
 >;
 
@@ -105,7 +109,8 @@ export const getPossibleFeatures = async (
     const eventData = req.body;
     console.log("Received event data:", eventData);
 
-    const requiredFields: (keyof EventType)[] = ["eventType"]; ["eventType"];
+    const requiredFields: (keyof EventType)[] = ["eventType"];
+    ["eventType"];
     for (const field of requiredFields) {
       if (!eventData[field]) {
         return res.status(400).json({
@@ -150,7 +155,7 @@ export const getPossibleFeatures = async (
       parsed = JSON.parse(jsonString);
     } catch (err) {
       return res.status(500).json({
-        error: "Failed to parse JSON: " + (err as Error).message
+        error: "Failed to parse JSON: " + (err as Error).message,
       });
     }
 
@@ -173,7 +178,6 @@ export const getPossibleFeatures = async (
     });
   }
 };
-
 
 // // get the recommended options for a single selected feature
 // app.post("/api/featureOptionRecs", getFeatureOptionRecs)
@@ -247,7 +251,7 @@ export const getFeatureOptionRecs = async (
       contents: prompt,
     });
     const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log("it worked!")
+    console.log("it worked!");
     if (!jsonString) {
       return res.status(500).json({
         error: "No valid response from AI model",
@@ -264,10 +268,8 @@ export const getFeatureOptionRecs = async (
     } catch (err) {
       return res.status(500).json({
         error: "Failed to parse JSON: " + (err as Error).message,
-
       });
     }
-
   } catch (error: any) {
     console.error("❌ Error in getFeatureOptionRecs:", error);
     return res.status(500).json({
@@ -331,7 +333,7 @@ export const generateImage = async (
     return res.json({
       generatedImage:
         imageData.generatedImages &&
-          imageData.generatedImages[0].image?.imageBytes !== undefined
+        imageData.generatedImages[0].image?.imageBytes !== undefined
           ? imageData.generatedImages[0].image.imageBytes
           : null,
     });
@@ -354,39 +356,87 @@ export const chatResp = async (
 ): Promise<ChatbotResponse> => {
   try {
     // Extract data from request body
-    const { chatmsgs, currRecs } = req.body;
-    console.log("Received chat messages for chatbot response.");
+    const { feature, chatmsgs, currRecs } = req.body;
+    console.log("GOT", feature, chatmsgs, currRecs);
 
     // call the AI service to get chatbot response based on the chat messages and current recommendations
-    const prompt = getChatbotResponsePrompt(eventData, chatmsgs, currRecs);
+    const prompt = getChatbotResponsePrompt(
+      eventData,
+      chatmsgs,
+      feature,
+      currRecs
+    );
     const resp = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       config: {
         systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            response: { type: Type.STRING },
+            updatedRecs: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  bookingLink: { type: Type.STRING },
+                  images: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                  },
+                  price: { type: Type.STRING }, // or Type.NUMBER if preferred
+                  date: { type: Type.STRING },
+                  color: { type: Type.STRING },
+                  contactInfo: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      phone: { type: Type.STRING },
+                      email: { type: Type.STRING },
+                      website: { type: Type.STRING },
+                    },
+                  },
+                  justification: { type: Type.STRING },
+                },
+                required: ["title"],
+              },
+            },
+          },
+          required: ["response", "updatedRecs"],
+        },
       },
       contents: prompt,
     });
-    if (!resp?.text) {
+    const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("it worked!", jsonString);
+    if (!jsonString) {
       return res.status(500).json({
-        error: "No text response from AI model" + resp,
-      });
-    } else if (!("response" in JSON.parse(resp.text))) {
-      return res.status(500).json({
-        error: "Invalid response format from AI model" + resp.text,
+        error: "No valid response from AI model",
       });
     }
-    const botRespData = JSON.parse(resp.text);
-    const botResp: { response: string; newRecs?: Recommendation[] } = {
-      response: botRespData.response,
-      newRecs: botRespData.newRecs,
-    };
 
-    return res.json({ response: botResp.response, newRecs: botResp.newRecs });
+    try {
+      const botRespData = JSON.parse(jsonString); // <-- parse raw JSON
+      const botResp: { response: string; newRecs?: Recommendation[] } = {
+        response: botRespData.response,
+        newRecs: botRespData.updatedRecs,
+      };
+
+      return res.json({ response: botResp.response, newRecs: botResp.newRecs });
+    } catch (error: any) {
+      console.error("❌ Error in chatResp:", error);
+
+      return res.status(500).json({
+        error: "Failed to generate chatResp" + error.message,
+      });
+    }
   } catch (error: any) {
     console.error("❌ Error in chatResp:", error);
-
     return res.status(500).json({
-      error: "Failed to generate chatResp" + error.message,
+      error: "Failed to generate recommendations" + error.message,
     });
   }
 };
@@ -447,16 +497,16 @@ export const recommendationClicked = async (
     contents: prompt,
   });
 
-  console.log("Recommnedation clicked ai response loaded!")
+  console.log("Recommnedation clicked ai response loaded!");
   const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
-  console.log("it worked!")
+  console.log("it worked!");
   if (!jsonString) {
     return res.status(500).json({
       error: "No valid response from AI model",
     });
   }
 
-    try {
+  try {
     const todoText: {
       todo: string;
       description: string;
