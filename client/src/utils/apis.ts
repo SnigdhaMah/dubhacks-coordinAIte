@@ -140,8 +140,8 @@ export const chatResp = async (
     },
     body: JSON.stringify({
       feature,
-      messages: chatmsgs,
-      currentRecs: currRecs,
+      chatmsgs,
+      currRecs,
     }),
   });
   return response.json().then((data) => ({

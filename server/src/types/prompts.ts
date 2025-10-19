@@ -125,11 +125,12 @@ export const getImageGenerationPrompt = (
 export const getChatbotResponsePrompt = (
   eventData: EventType,
   chatmsgs: ChatMessage[],
+  feature: string,
   currentRecs: Recommendation[]
 ) => {
   const chatPrompt = `
   Instructions:
-Your task is to respond to the user's latest message in <chatmsgs> while considering the event details in <eventData> and the current recommendations in <currentRecs>.
+Your task is to respond to the user's latest message in <chatmsgs> while considering the event details in <eventData> and the current recommendations in <currentRecs> for feature <feature>.
 Provide helpful, relevant, and concise information that addresses the user's needs and furthers the event planning process.
 Incorporate suggestions or modifications to the current recommendations if applicable.
 
@@ -140,6 +141,7 @@ You must follow these steps:
 Context:
 <eventData>: ${eventData}
 <chatmsgs>: ${JSON.stringify(chatmsgs)}
+<feature>: ${feature}
 <currentRecs>: ${JSON.stringify(currentRecs)}
 
 Example of Expected Output:

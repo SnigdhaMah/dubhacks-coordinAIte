@@ -195,6 +195,7 @@ function App() {
       currFeature?.recommended || [],
       currFeature?.featureTitle || ""
     );
+    alert(JSON.stringify(resp))
     // Update featurIndex[feature].recommendations and setMessage([whatever it was before + ai response).
     const aiMessage: ChatMessage = {
       sender: "bot",
