@@ -219,6 +219,7 @@ function App() {
       ...todos,
       {
         todo: "Buy Flowers",
+        description: "Go to Flowers on the Ave and buy some flowers ig",
         uid: "0",
         feature: "flowers",
         completed: false,

@@ -167,7 +167,8 @@ export const getTodoCreationPrompt = (recommendation: Recommendation) => {
   Instructions:
 Your task is to convert the given recommendation into a concise Todo item for the user's event planning checklist.
 Extract the essential details from the recommendation and format them into one clear and actionable Todo item.
-Return the Todo item in the JSON format: {todo: "your todo item here",  type: "invite" | "book" | "generic"}
+Return the Todo item in the JSON format: {todo: string, description: string, type: "invite" | "book" | "generic"} 
+where todo is the title of the todo and description has step-by-step instructions to complete the todo.
 Determine the type based on the recommendation content: use "invite" for guest-related tasks, "book" for reservations or service bookings, and "generic" for other tasks.
 
 Context:
@@ -191,7 +192,7 @@ Given the <recommendation>: {
       "Highly rated catering service known for quality and reliability.",
 }
 the output should be:
-  {todo: "Book Its All Good Catering for wedding catering services. Contact them at (206) 339-0313 or visit https://www.itsallgoodcatering.net/weddings to make a reservation.", type: "book"}
+  {todo: "Book Its All Good Catering", description: "Contact them at (206) 339-0313 or visit https://www.itsallgoodcatering.net/weddings to make a reservation.", type: "book"}
 `;
   return todoPrompt;
 };

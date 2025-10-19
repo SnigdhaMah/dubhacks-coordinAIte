@@ -374,13 +374,17 @@ export const recommendationClicked = async (
       error: "Invalid response format from AI model" + resp.text,
     });
   }
-  const todoText: { todo: string; type: "invite" | "book" | "generic" } =
-    JSON.parse(resp.text);
+  const todoText: {
+    todo: string;
+    description: string;
+    type: "invite" | "book" | "generic";
+  } = JSON.parse(resp.text);
 
   const newTodo: TodoType = {
     uid: `${feature}-${Date.now()}`,
     feature: feature,
     todo: todoText.todo,
+    description: todoText.description,
     completed: false,
     type: todoText.type,
   };
