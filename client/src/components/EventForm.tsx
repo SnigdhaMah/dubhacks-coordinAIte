@@ -32,6 +32,9 @@ function EventForm({
   const [day, setDay] = useState<string>('');
   const [year, setYear] = useState<string>('');
   const [priceRange, setPriceRange] = useState<number>(500000);
+  // const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  // const [colorPalette, setColorPalette] = useState<string[]>(['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF']);
+  // const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Generate array of years (current year to 5 years ahead)
   const currentYear = new Date().getFullYear();
@@ -64,8 +67,8 @@ function EventForm({
 
   // Format price for display
   const formatPrice = (price: number) => {
-    if (price >= 1000) {
-      return `${(price / 1000).toFixed(0)}k`;
+    if (price >= 500) {
+      return `${(price / 500).toFixed(0)}k`;
     }
     return `${price}`;
   };
@@ -89,6 +92,31 @@ console.log("EventForm props:", {
       paddingLeft: 8,
       paddingRight: 8,
     }}>
+      <style>
+        {`
+          input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4B3831;
+            cursor: pointer;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+          
+          input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4B3831;
+            cursor: pointer;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+        `}
+      </style>
       {/* Pink horizontal box at the top of the form */}
       <div
         style={{
@@ -221,7 +249,7 @@ console.log("EventForm props:", {
             alt="Wedding background"
             style={{
               width: '400px',
-              height: '1500px',
+              height: '750px',
               objectFit: 'cover',
               objectPosition: '100% 40%',
               display: 'block',
@@ -347,6 +375,7 @@ console.log("EventForm props:", {
               padding: '40px 60px',
               backgroundColor: '#E8E8E8',
               borderRadius: '10px',
+              marginRight: '100px',
             }}
           >
             <div style={{ 
@@ -358,13 +387,13 @@ console.log("EventForm props:", {
             }}>
               <span>$0</span>
               <span style={{ fontSize: '20px', fontWeight: '600' }}>{formatPrice(priceRange)}</span>
-              <span>$1,000,000</span>
+              <span>$200,000+</span>
             </div>
             <input
               type="range"
               min="0"
-              max="1000000"
-              step="1000"
+              max="100000"
+              step="500"
               value={priceRange}
               onChange={handlePriceChange}
               style={{
@@ -372,7 +401,7 @@ console.log("EventForm props:", {
                 height: '8px',
                 borderRadius: '5px',
                 outline: 'none',
-                background: `linear-gradient(to right, #D29C9A 0%, #D29C9A ${(priceRange / 1000000) * 100}%, #D9D9D9 ${(priceRange / 1000000) * 100}%, #D9D9D9 100%)`,
+                background: `linear-gradient(to right, #D29C9A 0%, #D29C9A ${(priceRange / 5000) * 5}%, #D9D9D9 ${(priceRange / 5000) * 5}%, #D9D9D9 100%)`,
                 WebkitAppearance: 'none',
                 cursor: 'pointer',
               }}

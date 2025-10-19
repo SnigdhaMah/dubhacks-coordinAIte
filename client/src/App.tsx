@@ -233,7 +233,7 @@ function App() {
       <main className="page content">
         {currentStage === "GET STARTED" ? (
           <div>
-            <GetStarted goToNextPage={() => setCurrentStage("MAIN PAGE")} />
+            <GetStarted goToNextPage={() => setCurrentStage("EVENT FORM")} />
           </div>
         ) : currentStage === "EVENT FORM" ? (
           <div>
