@@ -77,6 +77,7 @@ export default function SpecificFeature({
   }
 
   const handleRecommendationClick = (rec: Recommendation) => {
+    console.log("handleRecommendationClick")
     const itemKey = rec.title;
 
     if (selectedItem === itemKey) {

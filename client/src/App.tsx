@@ -57,7 +57,10 @@ function App() {
   const [currTodo, setCurrTodo] = useState<TodoType | null>(null);
 
   // current feature for SpecificFeature page
-  const [currFeature, setCurrFeature] = useState<FeatureType | null>(null);
+  const [currFeature, setCurrFeature] = useState<FeatureType>({uid:'1',
+        featureTitle: 'curre feature not set',
+        selected: null,
+        recommended: []});
 
   // chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -126,26 +129,48 @@ function App() {
 
   // feature helpers
   const onClickFeature = async (feature: FeatureType) => {
+    setCurrentStage("SPECIFIC FEATURE");
+    setCurrFeature(feature);
     // based on the feature passed, call setCurrPage("SpecificFeature") and setCurrFeature(feature) so that we go to the SpecificFeature page with the specified feature displayed
     const recommendations = await getFeatureOptionRecs(
       feature.featureTitle,
       messages,
       feature.recommended
     );
+
+    // TODO: figure out why alert causes rerender but no alert causes no rerender
     alert(JSON.stringify(recommendations));
     feature.recommended = recommendations;
+    // update feature index
+    const updatedFeatureIndex = featureIndex.map((f) => {
+      if (f.uid === feature.uid) {
+        return {
+          ...feature
+        };
+      } else {
+        return f;
+      }
+    });
+    setFeatureIndex(updatedFeatureIndex);
     setCurrFeature(feature);
-    setCurrentStage("SPECIFIC FEATURE");
   };
 
   const onSelectRecommendedFeature = async (recommendation: Recommendation) => {
     try {
-      if (!currFeature) return;
+      if (!currFeature || currFeature == null) {
+        alert("currFeature not set!")
+        setCurrFeature({uid:'1',
+        featureTitle: 'curre feature not set',
+        selected: null,
+        recommended: []})
+        // return;
+      }
       const resp = await recommendationClicked(
         currFeature.featureTitle,
         recommendation
       );
       if (resp) {
+        console.log("recieved response from clicking recs")
         // update todos
         setTodos(resp);
         // update feature index
@@ -215,17 +240,6 @@ function App() {
       setPossibleEvents(events);
     };
     fetchEventTypes();
-    setTodos([
-      ...todos,
-      {
-        todo: "Buy Flowers",
-        description: "Go to Flowers on the Ave and buy some flowers ig",
-        uid: "0",
-        feature: "flowers",
-        completed: false,
-        type: "generic",
-      } as TodoType,
-    ]);
   }, []);
 
   return (
