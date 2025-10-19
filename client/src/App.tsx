@@ -198,7 +198,7 @@ function App() {
   useEffect(() => {
     // on initial load, get possible event types from server
     const fetchEventTypes = async () => {
-      const events = ["hello"]; //await getEventTypes();
+      const events = ["hello","Wedding"]; //await getEventTypes();
       setPossibleEvents(events);
     };
     fetchEventTypes();
