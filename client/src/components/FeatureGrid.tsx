@@ -7,26 +7,18 @@ interface FeatureGridProps {
   onClickFeature: (feature: FeatureType) => void;
 }
 
-export const testFeatureData: FeatureType[] = [
-  {
-    uid: "1",
-    featureTitle: "Cake",
-    selected: { title: "test", images: ["https://images.pexels.com/photos/1721934/pexels-photo-1721934.jpeg?cs=srgb&dl=baked-goods-cake-close-up-1721934.jpg&fm=jpg"] },
-    recommended: [],
-  },
-];
-
 export default function FeatureGrid({
   featureIndex,
   onClickFeature,
 }: FeatureGridProps) {
+
   console.log("FeatureGrid props:", { featureIndex, onClickFeature });
 
   return (
     <div className="feature-grid-container">
-      <h1 className="features-heading">features</h1>
+      <h1 className="features-heading">Features</h1>
       <div className="feature-grid">
-        {testFeatureData.map((feature) => (
+        {featureIndex.map((feature) => (
         <div
           key={feature.uid}
           className="feature-card"
