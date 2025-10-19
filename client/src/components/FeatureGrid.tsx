@@ -11,7 +11,7 @@ export const testFeatureData: FeatureType[] = [
   {
     uid: "1",
     featureTitle: "Cake",
-    selected: { title: "test" },
+    selected: { title: "test", images: ["https://images.pexels.com/photos/1721934/pexels-photo-1721934.jpeg?cs=srgb&dl=baked-goods-cake-close-up-1721934.jpg&fm=jpg"] },
     recommended: [],
   },
 ];
