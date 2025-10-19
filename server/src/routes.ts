@@ -211,8 +211,7 @@ export const getFeatureOptionRecs = async (
   }
 };
 
-// // get all the event options for the user to select in the form
-// app.get("/api/getEventTypes", getEventTypes)
+// get all the event options for the user to select in the form
 // return {eventTypes: string[]}
 export const getEventTypes = async (
   _req: GeneralRequest,
@@ -221,8 +220,7 @@ export const getEventTypes = async (
   return res.json({ list: events });
 };
 
-// // reset all event information within the server for the user to restart their planning
-// app.post("/api/resetEventInfo", resetEventInfo)
+// reset all event information within the server for the user to restart their planning
 // return {success: boolean}
 export const resetEventInfo = async (
   _req: GeneralRequest,
@@ -240,9 +238,8 @@ export const resetEventInfo = async (
   return res.json(true);
 };
 
-// // get AI generated image based on the event details, selected features, and more
-// app.post("/api/generateImage", generateImage)
-// return {generatedImage: Image}
+// get AI generated image based on the event details, selected features, and more
+// return { generatedImage: string | null }
 export const generateImage = async (
   req: ImageRequest,
   res: ImageResponse

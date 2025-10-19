@@ -2,7 +2,7 @@ import { EventType } from "../types/eventType";
 import { FeatureType, Recommendation } from "../types/featureType";
 import { ChatMessage } from "../types/chatType";
 import { TodoType } from "../types/todoType";
-import * as fs from "node:fs";
+// import * as fs from "fs";
 
 // global index to generate file
 let index = 0;
@@ -111,11 +111,11 @@ export const generateImage = async (
     if (bytes == null) {
       return "";
     }
-    const buffer = Buffer.from(data, "base64");
-    fs.writeFileSync(
-      `../img/generatedImage-${index}.png`,
-      new Uint8Array(buffer)
-    );
+    // const buffer = Buffer.from(data, "base64");
+    // fs.writeFileSync(
+    //   `../img/generatedImage-${index}.png`,
+    //   new Uint8Array(buffer)
+    // );
     index++;
     return `../img/generatedImage-${index}.png`; // return the file
   });

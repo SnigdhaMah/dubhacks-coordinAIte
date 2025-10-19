@@ -33,7 +33,6 @@ function EventForm({
 }: EventFormProps) {
   console.log("EventForm props:", {
     eventData,
-    possibleEvents,
     possibleFeatures,
     selectedFeatures,
     lockInEvent,
