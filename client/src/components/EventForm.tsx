@@ -111,17 +111,6 @@ function EventForm({
     return `${price}`;
   };
 
-  console.log("EventForm props:", {
-    eventData,
-    possibleFeatures,
-    possibleFeaturesLength: possibleFeatures.length,
-    selectedFeatures,
-    selectedFeaturesLength: selectedFeatures.length,
-    lockInEvent,
-    getFeatures,
-    updateEvent,
-  });
-
   return (
     <div
       style={{
@@ -220,7 +209,7 @@ function EventForm({
           alt="Event background"
           style={{
             width: "100vw",
-            height: "auto",
+            height: "300px",
             objectFit: "cover",
             objectPosition: "50% 40%",
             display: "block",
