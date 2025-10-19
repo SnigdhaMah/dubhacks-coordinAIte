@@ -161,7 +161,6 @@ export const getPossibleFeatures = async (
 
     console.log(parsed);
 
-    const allFeatures: string[] = parsed.allFeatures;
     const recommendedFeatures: string[] = [
       "Venue", // default feature
       ...parsed.recommended,

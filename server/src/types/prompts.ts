@@ -15,7 +15,7 @@ export const getFeatureSelectionPrompt = (eventData: EventType) => {
   Instructions:
 Your task is to select features from <features> that best enhance the event based on <eventType>.
 Consider the nature of the event, its purpose, and any specific details mentioned to make your selections.
-Return a list of features selected as a string array in the JSON format: {recommended: ["feature1", "feature2", ...]} .
+Return a list of five features selected as a string array in the JSON format: {recommended: ["feature1", "feature2", ...]} .
 The features selected MUST be exact matches to features provided in <features>. Select up to 10 features that best fit the event type.
 
 Context:

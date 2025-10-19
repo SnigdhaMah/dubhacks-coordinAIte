@@ -230,6 +230,15 @@ function App() {
       setPossibleEvents(events);
     };
     fetchEventTypes();
+    setTodos([{
+      todo: "hello",
+      description: "do stuff",
+      uid: "1",
+      notes: "",
+      completed: false,
+      type: "invite",
+      feature: "Greet"
+    }])
   }, []);
 
   return (
