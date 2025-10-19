@@ -8,17 +8,26 @@ interface MainPageProps {
   // for Todos
   todos: TodoType[];
   onClickTodo: (todo: TodoType) => void;
+  updateTodo: (updatedTodo: TodoType) => void;
   // for Feature Grid
   featureIndex: FeatureType[];
   onClickFeature: (feature: FeatureType) => void;
 }
 
-export default function MainPage({ todos, onClickTodo, featureIndex, onClickFeature }: MainPageProps) {
+export default function MainPage({
+  todos,
+  onClickTodo,
+  updateTodo,
+  featureIndex,
+  onClickFeature,
+}: MainPageProps) {
   return (
-    <div>
-      Main Page Component
-      <Todos todos={todos} onClickTodo={onClickTodo} />
-      <FeatureGrid featureIndex={featureIndex} onClickFeature={onClickFeature}/>
-      </div>
-  )
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <Todos todos={todos} onClickTodo={onClickTodo} updateTodo={updateTodo} />
+      <FeatureGrid
+        featureIndex={featureIndex}
+        onClickFeature={onClickFeature}
+      />
+    </div>
+  );
 }

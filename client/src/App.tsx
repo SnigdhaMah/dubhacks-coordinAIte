@@ -115,6 +115,10 @@ function App() {
   };
 
   const updateTodo = async (updated: TodoType) => {
+    const newTodos = todos.map((todo) =>
+      todo.uid === updated.uid ? updated : todo
+    );
+    setTodos(newTodos);
     // update the current todo shown in SpecificTodo
     setCurrTodo(updated);
     // update the todos in the server
@@ -211,6 +215,16 @@ function App() {
       setPossibleEvents(events);
     };
     fetchEventTypes();
+    setTodos([
+      ...todos,
+      {
+        todo: "Buy Flowers",
+        uid: "0",
+        feature: "flowers",
+        completed: false,
+        type: "generic",
+      } as TodoType,
+    ]);
   }, []);
 
   return (
@@ -218,7 +232,7 @@ function App() {
       <main className="page content">
         {currentStage === "GET STARTED" ? (
           <div>
-            <GetStarted goToNextPage={() => setCurrentStage("EVENT FORM")} />
+            <GetStarted goToNextPage={() => setCurrentStage("MAIN PAGE")} />
           </div>
         ) : currentStage === "EVENT FORM" ? (
           <div>
@@ -238,6 +252,7 @@ function App() {
             <MainPage
               todos={todos}
               onClickTodo={onClickTodo}
+              updateTodo={updateTodo}
               featureIndex={featureIndex}
               onClickFeature={onClickFeature}
             />
