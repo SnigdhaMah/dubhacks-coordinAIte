@@ -30,7 +30,7 @@ app.get("/api/getEventTypes", getEventTypes);
 app.post("/api/resetEventInfo", resetEventInfo);
 
 // get AI generated image based on the event details, selected features, and more
-app.get("/api/generateImage", generateImage);
+app.post("/api/generateImage", generateImage);
 
 // get Chatbot Response for when user talks to the chatbot
 app.post("/api/chatResp", chatResp);

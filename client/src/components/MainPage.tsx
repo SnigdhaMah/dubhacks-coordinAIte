@@ -12,6 +12,7 @@ interface MainPageProps {
   // for Feature Grid
   featureIndex: FeatureType[];
   onClickFeature: (feature: FeatureType) => void;
+  onGenerateImage: () => void;
 }
 
 export default function MainPage({
@@ -20,6 +21,7 @@ export default function MainPage({
   updateTodo,
   featureIndex,
   onClickFeature,
+  onGenerateImage
 }: MainPageProps) {
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
@@ -27,6 +29,8 @@ export default function MainPage({
       <FeatureGrid
         featureIndex={featureIndex}
         onClickFeature={onClickFeature}
+        todos={todos} // Pass todos
+        onGenerateImage={onGenerateImage}
       />
     </div>
   );

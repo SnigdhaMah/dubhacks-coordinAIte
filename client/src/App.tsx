@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
+import { BrowserRouter, Routes, Route, useNavigate, useParams } from "react-router-dom";
 import { EventType } from "./types/eventType";
 import { FeatureType, Recommendation } from "./types/featureType";
 import EventForm from "./components/EventForm";
@@ -16,64 +17,49 @@ import GetStarted from "./components/GetStarted";
 import MainPage from "./components/MainPage";
 import SpecificFeature from "./components/SpecificFeature";
 import SpecificTodo from "./components/SpecificTodo";
+import GeneratedImagePage from "./components/GeneratedImagePage";
 import { TodoType } from "./types/todoType";
 import { ChatMessage } from "./types/chatType";
 import { nanoid } from "nanoid";
 
-function App() {
-  // generic state
-  // page/stage type used by navigation helpers
-  type AppStage =
-    | "GET STARTED"
-    | "EVENT FORM"
-    | "MAIN PAGE"
-    | "SPECIFIC FEATURE"
-    | "SPECIFIC TODO";
-  const [currentStage, setCurrentStage] =
-    React.useState<AppStage>("GET STARTED");
+// Main App component wrapped with routing logic
+function AppContent() {
+  const navigate = useNavigate();
+  
+  // State management (unchanged)
   const [eventData, setEventData] = useState<EventType>({
     eventType: "",
     date: new Date(),
     location: "",
-    price: "", // range
-    attendees: "", // range
+    price: "",
+    attendees: "",
   });
 
-  // navigation helper
-  const goToNextPage = (nextPage: AppStage) => {
-    setCurrentStage(nextPage);
-  };
-
-  // event-form / feature discovery state
   const [possibleEvents, setPossibleEvents] = useState<string[]>([]);
   const [possibleFeatures, setPossibleFeatures] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-
-  // feature index state: map feature name -> data about that feature
   const [featureIndex, setFeatureIndex] = useState<FeatureType[]>([]);
-
-  // todos state
   const [todos, setTodos] = useState<TodoType[]>([]);
   const [currTodo, setCurrTodo] = useState<TodoType | null>(null);
-
-  // current feature for SpecificFeature page
-  const [currFeature, setCurrFeature] = useState<FeatureType>({uid:'1',
-        featureTitle: 'curre feature not set',
-        selected: null,
-        recommended: []});
-
-  // chat state
+  const [currFeature, setCurrFeature] = useState<FeatureType>({
+    uid: '1',
+    featureTitle: 'current feature not set',
+    selected: null,
+    recommended: []
+  });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  // getFeatures: fetch features / recommendations for a given event context
-  const getFeatures = async (
-    eventData: EventType
-  ) => {
-    // will call the server with the passed in parameters to get an response like
-    // {allFeatures: string[], recommendedFeatures: string[] }.
-    // The function will use the server's response to call setSelectedFeatures and setPossibleFeatures accordingly.
+  // Navigation helpers - now using React Router
+  const goToEventForm = () => navigate("/event-form");
+  const goToMainPage = () => navigate("/main");
+  const goToSpecificFeature = (featureUid: string) => navigate(`/feature/${featureUid}`);
+  const goToSpecificTodo = (todoUid: string) => navigate(`/todo/${todoUid}`);
+  const goToGeneratedImage = () => navigate("/generated-image");
+
+  // Fetch features
+  const getFeatures = async (eventData: EventType) => {
     try {
-      const resp = await getPossibleFeatures(eventData); // {allFeatures: string[], recommendedFeatures: string[] }.
+      const resp = await getPossibleFeatures(eventData);
       setSelectedFeatures(resp.recommendedFeatures);
       setPossibleFeatures(resp.allFeatures);
     } catch (error) {
@@ -81,28 +67,24 @@ function App() {
     }
   };
 
-  // lockInEvent: persist basic event data, initialize feature index, and navigate to main page
+  // Lock in event and navigate to main page
   const lockInEvent = () => {
-    // set the App.tsx state for the basic event data (setEventInfo) => already done with setEventData
-    // set up the feature index. call goToNextPage("MainPage")
     const features = selectedFeatures.map((feature) => {
       return {
-        uid: nanoid(), // use nanoid to generate a unique id
+        uid: nanoid(),
         featureTitle: feature,
-        selected: null, // nothing is selected yet
-        recommended: [], // no recommendations yet
+        selected: null,
+        recommended: [],
       };
     });
     setFeatureIndex(features);
-
-    goToNextPage("MAIN PAGE");
+    goToMainPage();
   };
 
-  // todo helpers
+  // Todo helpers
   const onClickTodo = (todo: TodoType) => {
-    // call setCurrPage("SpecificTodo") and setCurrTodo(todo) so that we go to the SpecificTodo page with the specified todo as the todo to display
     setCurrTodo(todo);
-    setCurrentStage("SPECIFIC TODO");
+    goToSpecificTodo(todo.uid);
   };
 
   const updateTodo = async (updated: TodoType) => {
@@ -110,32 +92,27 @@ function App() {
       todo.uid === updated.uid ? updated : todo
     );
     setTodos(newTodos);
-    // update the current todo shown in SpecificTodo
     setCurrTodo(updated);
-    // update the todos in the server
     await updateTodoRoute(updated.feature, updated);
   };
 
-  // feature helpers
+  // Feature helpers
   const onClickFeature = async (feature: FeatureType) => {
-    setCurrentStage("SPECIFIC FEATURE");
     setCurrFeature(feature);
-    // based on the feature passed, call setCurrPage("SpecificFeature") and setCurrFeature(feature) so that we go to the SpecificFeature page with the specified feature displayed
+    goToSpecificFeature(feature.uid);
+    
     const recommendations = await getFeatureOptionRecs(
       feature.featureTitle,
       messages,
       feature.recommended
     );
 
-    // TODO: figure out why alert causes rerender but no alert causes no rerender
     alert(JSON.stringify(recommendations));
     feature.recommended = recommendations;
-    // update feature index
+    
     const updatedFeatureIndex = featureIndex.map((f) => {
       if (f.uid === feature.uid) {
-        return {
-          ...feature
-        };
+        return { ...feature };
       } else {
         return f;
       }
@@ -144,9 +121,13 @@ function App() {
     setCurrFeature(feature);
   };
 
+  // go to generated image page when at least 1 todo is made
+  const handleGenerateImage = () => {
+    goToGeneratedImage();
+  };
+
   const onSelectRecommendedFeature = async (recommendation: Recommendation) => {
     try {
-      // update feature index
       const updatedFeatureIndex = featureIndex.map((feature) => {
         if (feature.uid === currFeature.uid) {
           return {
@@ -163,48 +144,43 @@ function App() {
         currFeature.featureTitle,
         recommendation
       );
-      alert(JSON.stringify(resp))
+      alert(JSON.stringify(resp));
       if (resp) {
-        console.log("recieved response from clicking recs")
-        // update todos
+        console.log("received response from clicking recs");
         setTodos(resp);
       }
     } catch (error) {
-      console.log("something went wrong" + error)
+      console.log("something went wrong" + error);
     }
   };
 
-  // the user has confirmed their selections in SpecificFeature page
   const onConfirm = () => {
-    setCurrentStage("MAIN PAGE");
+    goToMainPage();
   };
 
   const onEnterChat = async (messageText: ChatMessage) => {
-    // The user hits enter in the chatbot messages,
-    // we will update setMessages([whatever it was before + message) to have the user's current message.
     const newMessages = [...messages, messageText];
     setMessages(newMessages);
-    // Then, we will call the server with (feature, messages, current recommendations)
-    // which will return us a chat response as well as updated recommendations.
+    
     const resp = await chatResp(
       newMessages,
       currFeature?.recommended || [],
       currFeature?.featureTitle || ""
     );
-    alert(JSON.stringify(resp))
-    // Update featurIndex[feature].recommendations and setMessage([whatever it was before + ai response).
+    alert(JSON.stringify(resp));
+    
     const aiMessage: ChatMessage = {
       sender: "bot",
       message: resp.response,
     };
     setMessages([...newMessages, aiMessage]);
+    
     if (resp.newRecs && currFeature) {
-      // update currFeature with new recommendations
       setCurrFeature({
         ...currFeature,
         recommended: resp.newRecs,
       });
-      // update feature index with new recommendations
+      
       const updatedFeatureIndex = featureIndex.map((feature) => {
         if (feature.uid === currFeature.uid) {
           return {
@@ -220,7 +196,6 @@ function App() {
   };
 
   useEffect(() => {
-    // on initial load, get possible event types from server
     const fetchEventTypes = async () => {
       const events = await getEventTypes();
       setPossibleEvents(events);
@@ -234,54 +209,116 @@ function App() {
       completed: false,
       type: "invite",
       feature: "Greet"
-    }])
+    }]);
   }, []);
 
   return (
+    <Routes>
+      {/* Home/Get Started */}
+      <Route path="/" element={
+        <GetStarted goToNextPage={goToEventForm} />
+      } />
+
+      {/* Event Form */}
+      <Route path="/event-form" element={
+        <EventForm
+          possibleEvents={possibleEvents}
+          possibleFeatures={possibleFeatures}
+          selectedFeatures={selectedFeatures}
+          getFeatures={getFeatures}
+          eventData={eventData}
+          updateEvent={setEventData}
+          updateSelectedFeatures={setSelectedFeatures}
+          lockInEvent={lockInEvent}
+        />
+      } />
+
+      {/* Main Page */}
+      <Route path="/main" element={
+        <MainPage
+          todos={todos}
+          onClickTodo={onClickTodo}
+          updateTodo={updateTodo}
+          featureIndex={featureIndex}
+          onClickFeature={onClickFeature}
+          onGenerateImage={handleGenerateImage}
+        />
+      } />
+
+      {/** Generate Image */}
+      <Route path="/generated-image" element={
+        <GeneratedImagePage featureIndex={featureIndex} />
+      } />
+
+      {/* Specific Feature - uses URL parameter */}
+      <Route path="/feature/:featureUid" element={
+        <FeatureRoute
+          featureIndex={featureIndex}
+          currFeature={currFeature}
+          onSelectRecommendedFeature={onSelectRecommendedFeature}
+          messages={messages}
+          onEnterChat={onEnterChat}
+          onConfirm={onConfirm}
+        />
+      } />
+
+      {/* Specific Todo - uses URL parameter */}
+      <Route path="/todo/:todoUid" element={
+        <TodoRoute
+          todos={todos}
+          currTodo={currTodo}
+          updateTodo={updateTodo}
+        />
+      } />
+    </Routes>
+  );
+}
+
+// Wrapper component for Feature route to access URL params
+function FeatureRoute({ 
+  featureIndex, 
+  currFeature, 
+  onSelectRecommendedFeature, 
+  messages, 
+  onEnterChat, 
+  onConfirm 
+}: any) {
+  const { featureUid } = useParams();
+  
+  // Find the feature from the index based on URL parameter
+  const feature = featureIndex.find((f: FeatureType) => f.uid === featureUid) || currFeature;
+  
+  return (
+    <SpecificFeature
+      feature={feature}
+      onSelectedRecommneded={onSelectRecommendedFeature}
+      messages={messages}
+      onSendMessage={onEnterChat}
+      onConfirm={onConfirm}
+    />
+  );
+}
+
+// Wrapper component for Todo route to access URL params
+function TodoRoute({ todos, currTodo, updateTodo }: any) {
+  const { todoUid } = useParams();
+  
+  // Find the todo based on URL parameter
+  const todo = todos.find((t: TodoType) => t.uid === todoUid) || currTodo;
+  
+  return (
+    <SpecificTodo todo={todo} updateTodo={updateTodo} />
+  );
+}
+
+// Main App component with Router wrapper
+function App() {
+  return (
     <div className="App">
       <main className="page content">
-        {currentStage === "GET STARTED" ? (
-          <div>
-            <GetStarted goToNextPage={() => setCurrentStage("EVENT FORM")} />
-          </div>
-        ) : currentStage === "EVENT FORM" ? (
-          <div>
-            <EventForm
-              possibleEvents={possibleEvents}
-              possibleFeatures={possibleFeatures}
-              selectedFeatures={selectedFeatures}
-              getFeatures={getFeatures}
-              eventData={eventData}
-              updateEvent={setEventData}
-              updateSelectedFeatures={setSelectedFeatures}
-              lockInEvent={lockInEvent}
-            />
-          </div>
-        ) : currentStage === "MAIN PAGE" ? (
-          <div>
-            <MainPage
-              todos={todos}
-              onClickTodo={onClickTodo}
-              updateTodo={updateTodo}
-              featureIndex={featureIndex}
-              onClickFeature={onClickFeature}
-            />
-          </div>
-        ) : currentStage === "SPECIFIC FEATURE" ? (
-          <div>
-            <SpecificFeature
-              feature={currFeature}
-              onSelectedRecommneded={onSelectRecommendedFeature}
-              messages={messages}
-              onSendMessage={onEnterChat}
-              onConfirm={onConfirm}
-            />
-          </div>
-        ) : currentStage === "SPECIFIC TODO" ? (
-          <div>
-            <SpecificTodo todo={currTodo} updateTodo={updateTodo} />
-          </div>
-        ) : null}
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
       </main>
     </div>
   );

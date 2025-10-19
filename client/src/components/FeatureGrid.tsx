@@ -1,15 +1,20 @@
 import React from 'react';
 import { FeatureType } from '../types/featureType';
+import { TodoType } from '../types/todoType';
 
 
 interface FeatureGridProps {
   featureIndex: FeatureType[];
   onClickFeature: (feature: FeatureType) => void;
+  todos: TodoType[];
+  onGenerateImage: () => void;
 }
 
 export default function FeatureGrid({
   featureIndex,
   onClickFeature,
+  todos,
+  onGenerateImage,
 }: FeatureGridProps) {
 
   console.log("FeatureGrid props:", { featureIndex, onClickFeature });
@@ -17,6 +22,17 @@ export default function FeatureGrid({
   return (
     <div className="feature-grid-container">
       <h1 className="features-heading">Features</h1>
+
+      {/* Show Generate Image button only if at least 1 todo exists */}
+      {todos.length > 0 && (
+        <button 
+          className="generate-image-button"
+          onClick={onGenerateImage}
+        >
+          🎨 Generate Event Preview Image
+        </button>
+      )}
+
       <div className="feature-grid">
         {featureIndex.map((feature) => (
         <div
@@ -43,7 +59,7 @@ export default function FeatureGrid({
           </div>
           
           <div className="feature-action-section">
-            <p className="action-text">click here to choose a selection</p>
+            <p className="action-text">loading features... please don't leave</p>
           </div>
         </div>
       ))}

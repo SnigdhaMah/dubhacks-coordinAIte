@@ -4,8 +4,6 @@ import { ChatMessage } from "../types/chatType";
 import { TodoType } from "../types/todoType";
 // import * as fs from "fs";
 
-// global index to generate file
-let index = 0;
 
 // get the all features to be displayed in the feature grid, with the AI rec'd features first in the list
 // and all other possible features after
@@ -101,25 +99,20 @@ export const generateImage = async (
   featureIndex: FeatureType[]
 ): Promise<string> => {
   const response = await fetch(`/api/generateImage`, {
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ featureIndex }),
   });
-
   return response.json().then((data) => {
     const bytes = data.generatedImage;
     if (bytes == null) {
       return "";
     }
-    // const buffer = Buffer.from(data, "base64");
-    // fs.writeFileSync(
-    //   `../img/generatedImage-${index}.png`,
-    //   new Uint8Array(buffer)
-    // );
-    index++;
-    return `../img/generatedImage-${index}.png`; // return the file
+    
+    // Convert base64 bytes to a displayable image URL
+    return `data:image/png;base64,${bytes}`;
   });
 };
 
