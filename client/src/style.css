@@ -840,7 +840,7 @@
 }
 
 .recommendation-card.selected {
-  border-color: #3b82f6;
+  border-color: #d64869;
   background-color: #eff6ff;
 }
 
@@ -948,7 +948,7 @@
   width: 100%;
   height: 100%;
   border: 4px solid #f3f4f6;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #c99591;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -966,7 +966,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #667eea;
+  background: #c99591;
   animation: bounce 1.4s infinite ease-in-out;
 }
 
