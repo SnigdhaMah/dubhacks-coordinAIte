@@ -11,49 +11,6 @@ type SpecificFeatureProps = {
   onConfirm: () => void;
 };
 
-export const testSpecificFeatureData: FeatureType = {
-  uid: "1",
-  featureTitle: "Wedding Cake",
-  selected: null,
-  recommended: [
-    {
-      title: "Sweet Dreams Bakery",
-      description:
-        "Custom 3-tier vanilla and chocolate cake with fresh flowers",
-      price: 450,
-      contactInfo: {
-        name: "Maria Johnson",
-        phone: "(555) 123-4567",
-        email: "info@sweetdreamsbakery.com",
-      },
-      justification:
-        "Highly rated for wedding cakes, specializes in elegant designs",
-    },
-    {
-      title: "The Cake Studio",
-      description: "Modern minimalist design with buttercream frosting",
-      price: "$350-500",
-      bookingLink: "https://example.com/booking",
-      contactInfo: {
-        website: "https://thecakestudio.com",
-      },
-      justification: "Best pricing in your area with excellent reviews",
-    },
-    {
-      title: "Artisan Confections",
-      description: "Rustic naked cake with seasonal berries",
-      price: 380,
-      date: "2025-11-15",
-      contactInfo: {
-        name: "Chef Robert",
-        phone: "(555) 987-6543",
-      },
-      justification:
-        "Specialty in natural, organic ingredients perfect for outdoor weddings",
-    },
-  ],
-};
-
 export default function SpecificFeature({
   feature,
   onSelectedRecommneded,
@@ -84,116 +41,141 @@ export default function SpecificFeature({
     return selectedItem === rec.title;
   };
 
+  // Check if recommendations are still loading (empty array means loading)
+  const isLoading = feature.recommended.length === 0;
+
   return (
     <div className="specific-feature-container">
       <div className="specific-feature-content">
         <h1 className="feature-heading">{feature.featureTitle}</h1>
 
-        <div className="recommendations-list">
-          {false ? (
-            <p className="no-recommendations">No recommendations available</p>
-          ) : (
-            feature.recommended.map((rec, index) => (
-              <div
-                key={index}
-                className={`recommendation-card ${
-                  isSelected(rec) ? "selected" : ""
-                }`}
-                onClick={() => handleRecommendationClick(rec)}
-              >
-                <div className="recommendation-content">
-                  <div className="recommendation-main">
-                    <h3 className="recommendation-title">{rec.title}</h3>
-                    {rec.description && (
-                      <p className="recommendation-description">
-                        {rec.description}
-                      </p>
-                    )}
-                    {rec.justification && (
-                      <p className="recommendation-justification">
-                        <strong>Why recommended:</strong> {rec.justification}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="recommendation-details">
-                    {rec.price && (
-                      <div className="detail-item">
-                        <span className="detail-label">Price:</span>
-                        <span className="detail-value">
-                          {typeof rec.price === "number"
-                            ? `$${rec.price}`
-                            : rec.price}
-                        </span>
-                      </div>
-                    )}
-
-                    {rec.date && (
-                      <div className="detail-item">
-                        <span className="detail-label">Date:</span>
-                        <span className="detail-value">
-                          {new Date(rec.date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
-
-                    {rec.contactInfo && (
-                      <div className="detail-item contact-info">
-                        {rec.contactInfo.name && (
-                          <span>{rec.contactInfo.name}</span>
-                        )}
-                        {rec.contactInfo.phone && (
-                          <span>{rec.contactInfo.phone}</span>
-                        )}
-                        {rec.contactInfo.email && (
-                          <span>{rec.contactInfo.email}</span>
-                        )}
-                        {rec.contactInfo.website && (
-                          <a
-                            href={rec.contactInfo.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Visit Website
-                          </a>
-                        )}
-                      </div>
-                    )}
-
-                    {rec.bookingLink && (
-                      <a
-                        href={rec.bookingLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="booking-link"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Book Now
-                      </a>
-                    )}
-                  </div>
-
-                  {rec.images && rec.images.length > 0 && (
-                    <div className="recommendation-images">
-                      {rec.images.map((img, imgIndex) => (
-                        <img
-                          key={imgIndex}
-                          src={img}
-                          alt={`${rec.title} ${imgIndex + 1}`}
-                          className="recommendation-image"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+        {isLoading ? (
+          // Loading State
+          <div className="recommendations-loading">
+            <div className="loading-animation">
+              <div className="loading-spinner"></div>
+              <div className="loading-dots">
+                <span className="dot dot-1"></span>
+                <span className="dot dot-2"></span>
+                <span className="dot dot-3"></span>
               </div>
-            ))
-          )}
-        </div>
+            </div>
+            <h2 className="loading-title">Finding the best options for you...</h2>
+            <p className="loading-subtitle">
+              Our AI is searching for personalized recommendations based on your event details
+            </p>
+            <div className="loading-progress">
+              <div className="progress-bar">
+                <div className="progress-fill"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Loaded State with Recommendations
+          <>
+            <div className="recommendations-list">
+              {feature.recommended.map((rec, index) => (
+                <div
+                  key={index}
+                  className={`recommendation-card ${
+                    isSelected(rec) ? "selected" : ""
+                  }`}
+                  onClick={() => handleRecommendationClick(rec)}
+                >
+                  <div className="recommendation-content">
+                    <div className="recommendation-main">
+                      <h3 className="recommendation-title">{rec.title}</h3>
+                      {rec.description && (
+                        <p className="recommendation-description">
+                          {rec.description}
+                        </p>
+                      )}
+                      {rec.justification && (
+                        <p className="recommendation-justification">
+                          <strong>Why recommended:</strong> {rec.justification}
+                        </p>
+                      )}
+                    </div>
 
-        <button className="confirm-button" onClick={onConfirm}>
-          Confirm Selection
-        </button>
+                    <div className="recommendation-details">
+                      {rec.price && (
+                        <div className="detail-item">
+                          <span className="detail-label">Price:</span>
+                          <span className="detail-value">
+                            {typeof rec.price === "number"
+                              ? `$${rec.price}`
+                              : rec.price}
+                          </span>
+                        </div>
+                      )}
+
+                      {rec.date && (
+                        <div className="detail-item">
+                          <span className="detail-label">Date:</span>
+                          <span className="detail-value">
+                            {new Date(rec.date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+
+                      {rec.contactInfo && (
+                        <div className="detail-item contact-info">
+                          {rec.contactInfo.name && (
+                            <span>{rec.contactInfo.name}</span>
+                          )}
+                          {rec.contactInfo.phone && (
+                            <span>{rec.contactInfo.phone}</span>
+                          )}
+                          {rec.contactInfo.email && (
+                            <span>{rec.contactInfo.email}</span>
+                          )}
+                          {rec.contactInfo.website && (
+                            <a
+                              href={rec.contactInfo.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Visit Website
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {rec.bookingLink && (
+                        <a
+                          href={rec.bookingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="booking-link"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Book Now
+                        </a>
+                      )}
+                    </div>
+
+                    {rec.images && rec.images.length > 0 && (
+                      <div className="recommendation-images">
+                        {rec.images.map((img, imgIndex) => (
+                          <img
+                            key={imgIndex}
+                            src={img}
+                            alt={`${rec.title} ${imgIndex + 1}`}
+                            className="recommendation-image"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className="confirm-button" onClick={onConfirm}>
+              Confirm Selection
+            </button>
+          </>
+        )}
       </div>
 
       <div className="chat-section">
