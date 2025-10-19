@@ -3,11 +3,14 @@ import { EventType } from "./types/eventType";
 import { ChatMessage } from "./types/chatType";
 import { Recommendation, FeatureType } from "./types/featureType";
 import { TodoType } from "./types/todoType";
-import { GoogleGenAI } from "@google/genai";
+import { GenerateImagesResponse, GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import {
+  getChatbotResponsePrompt,
   getFeatureOptionsPrompt,
   getFeatureSelectionPrompt,
+  getImageGenerationPrompt,
+  getTodoCreationPrompt,
   systemPrompt,
 } from "./types/prompts";
 dotenv.config();
@@ -62,7 +65,9 @@ type EventTypesResponse = Response<{ list: string[] }>;
 type ResetResponse = Response<boolean>;
 
 type ImageRequest = Request<{}, {}, { featureIndex: FeatureType[] }>;
-type ImageResponse = Response<{ generatedImage: string } | { error: string }>;
+type ImageResponse = Response<
+  { generatedImage: string | null } | { error: string }
+>;
 
 type ChatbotRequest = Request<
   {},
@@ -77,7 +82,7 @@ type ChatbotResponse = Response<
   | { error: string }
 >;
 
-type TodoListResponse = Response<{ newTodos: TodoType[] }>;
+type TodoListResponse = Response<{ newTodos: TodoType[] } | { error: string }>;
 
 type updateTodoRequest = Request<{}, {}, { feature: string; todo: TodoType }>;
 
@@ -129,7 +134,10 @@ export const getPossibleFeatures = async (
         error: "Invalid response format from AI model" + resp.text,
       });
     }
-    const recommendedFeatures: string[] = JSON.parse(resp.text).recommended;
+    const recommendedFeatures: string[] = [
+      "Venue",
+      ...JSON.parse(resp.text).recommended,
+    ].filter((item, pos, arr) => arr.indexOf(item) === pos); // add "Venue" as default recommended feature and remove duplicates
 
     // Send response back to client
     return res.json({
@@ -149,6 +157,8 @@ export const getPossibleFeatures = async (
 // app.post("/api/featureOptionRecs", getFeatureOptionRecs)
 // param:
 // selectedFeature: String - the selected feature clicked
+// chatmsgs: ChatMessage[] - a list of all the chat history for the selected feature
+// currRecs: Recommendation[] - the current list of recommendations for the specific feature
 // return {recommendations: { title, description, booking link, images, price, date, color, contact info, justification }[ ] } based on the AI's response
 export const getFeatureOptionRecs = async (
   req: FeatureOptionsRequest,
@@ -192,7 +202,7 @@ export const getFeatureOptionRecs = async (
     ).recommendations;
 
     // Send response back to client
-    return res.json({ recommendations });
+    return res.json({ recommendations: recommendations });
   } catch (error: any) {
     console.error("❌ Error in getFeatureOptionRecs:", error);
     return res.status(500).json({
@@ -242,15 +252,27 @@ export const generateImage = async (
     const { featureIndex } = req.body;
     console.log("Received feature index for image generation.");
     // filter out to selected features only
-    const selectedFeature = featureIndex
-      .filter((feature) => feature.selected !== null)
-      .map((feature) => feature.selected);
+    const selectedFeatures: Recommendation[] = featureIndex
+      .map((feature) => feature.selected)
+      .filter((selected): selected is Recommendation => selected !== null);
 
     // call the AI to generate an image based on the event details and selected features
-    const imageData = ""; // TODO: ADD AI
-    console.log(selectedFeature);
+    const prompt = getImageGenerationPrompt(eventData, selectedFeatures);
+    const imageData: GenerateImagesResponse = await ai.models.generateImages({
+      model: "imagen-4.0-generate-001",
+      prompt,
+      config: {
+        numberOfImages: 1,
+      },
+    });
 
-    return res.json({ generatedImage: imageData });
+    return res.json({
+      generatedImage:
+        imageData.generatedImages &&
+        imageData.generatedImages[0].image?.imageBytes !== undefined
+          ? imageData.generatedImages[0].image.imageBytes
+          : null,
+    });
   } catch (error: any) {
     console.error("❌ Error in generateImage:", error);
     return res.status(500).json({
@@ -259,10 +281,10 @@ export const generateImage = async (
   }
 };
 
-// // get Chatbot Response for when user talks to the chatbot
-// app.post("/api/chatResp", chatResp)
+// get Chatbot Response for when user talks to the chatbot
 // param:
-// context: String - user chat context
+// chatmsgs: ChatMessage[] - the list of all the chat messages between user and bot
+// currRect: Recommendation[] - current list of recommendations for the selected features
 // return {response: string}
 export const chatResp = async (
   req: ChatbotRequest,
@@ -272,12 +294,32 @@ export const chatResp = async (
     // Extract data from request body
     const { chatmsgs, currRecs } = req.body;
     console.log("Received chat messages for chatbot response.");
-    // TODO: ADD AI
-    const ai: { response: string; newRecs?: Recommendation[] } = {
-      response: "This is a placeholder response from the chatbot.",
+
+    // call the AI service to get chatbot response based on the chat messages and current recommendations
+    const prompt = getChatbotResponsePrompt(eventData, chatmsgs, currRecs);
+    const resp = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: prompt,
+    });
+    if (!resp?.text) {
+      return res.status(500).json({
+        error: "No text response from AI model" + resp,
+      });
+    } else if (!("response" in JSON.parse(resp.text))) {
+      return res.status(500).json({
+        error: "Invalid response format from AI model" + resp.text,
+      });
+    }
+    const botRespData = JSON.parse(resp.text);
+    const botResp: { response: string; newRecs?: Recommendation[] } = {
+      response: botRespData.response,
+      newRecs: botRespData.newRecs,
     };
-    console.log(chatmsgs, currRecs);
-    return res.json({ response: ai.response, newRecs: ai.newRecs });
+
+    return res.json({ response: botResp.response, newRecs: botResp.newRecs });
   } catch (error: any) {
     console.error("❌ Error in chatResp:", error);
 
@@ -287,10 +329,10 @@ export const chatResp = async (
   }
 };
 
-// // send new Todo to server
-// app.post("api/addNewTodo", addNewTodo)
+// update a specific Todo element
 // param:
-// todo: Recommendation - the desired todo to add
+// feature: string - the feature that the todo is associated with (e.g. cake)
+// todo: TodoType - the desired todo alter
 // return {success: boolean}
 export const updateTodo = async (
   req: updateTodoRequest,
@@ -318,9 +360,36 @@ export const recommendationClicked = async (
 
   selectedFeatures.set(feature, clickedRec);
 
-  // TODO: add AI
+  const prompt = getTodoCreationPrompt(clickedRec);
+  const resp = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    config: {
+      systemInstruction: systemPrompt,
+    },
+    contents: prompt,
+  });
+  if (!resp?.text) {
+    return res.status(500).json({
+      error: "No text response from AI model" + resp,
+    });
+  } else if (!("todo" in JSON.parse(resp.text))) {
+    return res.status(500).json({
+      error: "Invalid response format from AI model" + resp.text,
+    });
+  }
+  const todoText: { todo: string; type: "invite" | "book" | "generic" } =
+    JSON.parse(resp.text);
+
+  const newTodo: TodoType = {
+    uid: `${feature}-${Date.now()}`,
+    feature: feature,
+    todo: todoText.todo,
+    completed: false,
+    type: todoText.type,
+  };
   // for the clicked recommendation, generate expected todos and save them as a TodoType
   // into the todos map
+  todos.set(feature, newTodo);
 
   const newTodosArray: TodoType[] = Array.from(todos.values());
 
@@ -390,6 +459,7 @@ const events: string[] = [
 ];
 
 export const allFeatures: string[] = [
+  "Venue",
   "Alcohol Bar",
   "Backdrop",
   "Balloons",

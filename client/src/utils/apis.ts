@@ -2,7 +2,16 @@ import { EventType } from "../types/eventType";
 import { FeatureType, Recommendation } from "../types/featureType";
 import { ChatMessage } from "../types/chatType";
 import { TodoType } from "../types/todoType";
+import * as fs from "node:fs";
 
+// global index to generate file
+let index = 0;
+
+// get the all features to be displayed in the feature grid, with the AI rec'd features first in the list
+// and all other possible features after
+// param:
+// eventDetails: EventType - Event Details
+// return {allFeatures: string[], recommendedFeatures: string[] }
 export const getPossibleFeatures = async (
   eventData: EventType
 ): Promise<{
@@ -36,7 +45,14 @@ export const getPossibleFeatures = async (
   }
 };
 
-// on the specific feature page, get the options/recommendations for the selected feature
+// // get the recommended options for a single selected feature
+// app.post("/api/featureOptionRecs", getFeatureOptionRecs)
+// param:
+// selectedFeature: String - the selected feature clicked
+// chatmsgs: ChatMessage[] - a list of all the chat history for the selected feature
+// currRecs: Recommendation[] - the current list of recommendations for the specific feature
+// return {recommendations: { title, description, booking link, images, price, date, color, contact info, justification }[ ] } based on the AI's response
+// return {recommendations: Recommendation[ ] } based on the AI's response
 export const getFeatureOptionRecs = async (
   selectedFeature: string, // the feature title (e.g.cake)
   chatmsgs: ChatMessage[],
@@ -54,6 +70,7 @@ export const getFeatureOptionRecs = async (
 };
 
 // get all the event options for the user to select in the form
+// return {eventTypes: string[]}
 export const getEventTypes = async (): Promise<string[]> => {
   const response = await fetch(`/api/getEventTypes`, {
     method: "GET",
@@ -64,6 +81,8 @@ export const getEventTypes = async (): Promise<string[]> => {
   return response.json().then((data) => data.list);
 };
 
+// reset all event information within the server for the user to restart their planning
+// return {success: boolean}
 export const resetEventInfo = async (): Promise<boolean> => {
   await fetch(`/api/resetEventInfo`, {
     method: "POST",
@@ -74,6 +93,8 @@ export const resetEventInfo = async (): Promise<boolean> => {
   return true;
 };
 
+// get AI generated image based on the event details, selected features, and more
+// return { generatedImage: string | null }
 export const generateImage = async (
   featureIndex: FeatureType[]
 ): Promise<string> => {
@@ -84,9 +105,27 @@ export const generateImage = async (
     },
     body: JSON.stringify({ featureIndex }),
   });
-  return response.json().then((data) => data.image as string);
+
+  return response.json().then((data) => {
+    const bytes = data.generatedImage;
+    if (bytes == null) {
+      return "";
+    }
+    const buffer = Buffer.from(data, "base64");
+    fs.writeFileSync(
+      `../img/generatedImage-${index}.png`,
+      new Uint8Array(buffer)
+    );
+    index++;
+    return `../img/generatedImage-${index}.png`; // return the file
+  });
 };
 
+// get Chatbot Response for when user talks to the chatbot
+// param:
+// chatmsgs: ChatMessage[] - the list of all the chat messages between user and bot
+// currRect: Recommendation[] - current list of recommendations for the selected features
+// return {response: string}
 export const chatResp = async (
   chatmsgs: ChatMessage[],
   currRecs: Recommendation[],
@@ -109,9 +148,15 @@ export const chatResp = async (
   }));
 };
 
+// the feature option recommendation selected (e.g. a type of cake recommended for the feature "cake")
+// the selected option should be added to the TODO list
+// param
+// feature: string - the selected feature in which the option recommendation comes from
+// clickedRec: Recommendation - the option recommendation the user selected
+// return ({newTodos: TodoType[]}) - updated list of todos to be displayed in the todo list
 export const recommendationClicked = async (
   feature: string,
-  rec: Recommendation
+  clickedRec: Recommendation
 ): Promise<TodoType[]> => {
   // send the clicked recommendation to the server and get back the updated todo list
   const response = await fetch(`/api/recommendationClicked`, {
@@ -119,22 +164,27 @@ export const recommendationClicked = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ feature: feature, recommendation: rec }),
+    body: JSON.stringify({ feature: feature, recommendation: clickedRec }),
   });
   return response.json().then((data) => data.todos as TodoType[]);
 };
 
+// update a specific Todo element
+// param:
+// feature: string - the feature that the todo is associated with (e.g. cake)
+// todo: TodoType - the desired todo alter
+// return {success: boolean}
 export const updateTodoRoute = async (
   feature: string,
   todo: TodoType
 ): Promise<boolean> => {
   // update the server's todos
-  await fetch(`/api/updateTodo`, {
+  const response = await fetch(`/api/updateTodo`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ feature: feature, todo: todo }),
   });
-  return true;
+  return response.json().then((data) => data.success);
 };

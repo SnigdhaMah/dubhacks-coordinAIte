@@ -102,10 +102,99 @@ the output should be:
 };
 
 // prompt for generating an image based on event details and selected features
+export const getImageGenerationPrompt = (
+  eventData: EventType,
+  selectedFeatures: Recommendation[]
+) => {
+  const imagePrompt = `
+  Instructions:
+  Your task is to create a photorealistic image that visually represents the event based on <eventData> and <selectedFeatures>.
+  The background should be <eventData.location> during the appropriate time of day for <eventData.eventType>.
+  Consider the event type, date, location, and the features selected to create an appropriate and appealing image.
+  The image should capture the essence of the event and highlight the selected features in a visually engaging manner.
+  
+  Context:
+  <eventData>: ${eventData}
+  <selectedFeatures>: ${JSON.stringify(selectedFeatures)}
+`;
+  return imagePrompt;
+};
 
 // prompt for chat response and updating the recommendations based on user input
+export const getChatbotResponsePrompt = (
+  eventData: EventType,
+  chatmsgs: ChatMessage[],
+  currentRecs: Recommendation[]
+) => {
+  const chatPrompt = `
+  Instructions:
+Your task is to respond to the user's latest message in <chatmsgs> while considering the event details in <eventData> and the current recommendations in <currentRecs>.
+Provide helpful, relevant, and concise information that addresses the user's needs and furthers the event planning process.
+Incorporate suggestions or modifications to the current recommendations if applicable.
+
+You must follow these steps:
+1. Identify if the user's latest message requires updating the recommendations.
+2. Return your response in the JSON format: {response: "your response here", updatedRecs: [/* updated recommendations if any */]}.
+
+Context:
+<eventData>: ${eventData}
+<chatmsgs>: ${JSON.stringify(chatmsgs)}
+<currentRecs>: ${JSON.stringify(currentRecs)}
+
+Example of Expected Output:
+Given the <eventData>: {eventType: "Birthday Party", date: "2023-12-15", location: "New York City"}, chatmsgs: [{role: "user", content: "Can you suggest some fun activities for a birthday party?"}], and currentRecs: [],
+the output should be:
+{response: "Sure! For a birthday party in New York City, consider activities like a scavenger hunt in Central Park, a visit to an escape room, or a boat ride around Manhattan. These activities are fun and engaging for guests of all ages.", updatedRecs: [{
+    title: "Central Park Scavenger Hunt",
+    description: "An exciting scavenger hunt through Central Park with clues and challenges.",
+    bookingLink: "https://www.centralparkscavengerhunt.com",
+    images: ["https://www.bing.com/images/search?view=detailV2&ccid=ScavengerHunt&id=1234567890ABCDEF1234567890ABCDEF12345678&thid=OIP.ScavengerHuntXYZ&mediaurl=https%3a%2f%2fwww.centralparkscavengerhunt.com%2fimages%2fhunt.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.abcdef1234567890abcdef1234567890%3frik%3dScavengerHuntImage%26pid%3dImgRaw%26r%3d0&ex
+ph=800&expw=1200&q=central+park+scavenger+hunt&FORM=IRPRST&ck=ABCDEF1234567890ABCDEF1234567890&selectedIndex=2&itb=0&ajaxhist=0&ajaxserp=0"],
+    price: "500",
+    date: "2023-12-15",
+    contactInfo: {
+        phone: "(212) 555-1234",
+    }; 
+    justification: "A fun and interactive activity that encourages teamwork and exploration.",
+}]}
+`;
+  return chatPrompt;
+};
 
 // prompt for turning a Recommendation into a Todo item
+export const getTodoCreationPrompt = (recommendation: Recommendation) => {
+  const todoPrompt = `
+  Instructions:
+Your task is to convert the given recommendation into a concise Todo item for the user's event planning checklist.
+Extract the essential details from the recommendation and format them into one clear and actionable Todo item.
+Return the Todo item in the JSON format: {todo: "your todo item here",  type: "invite" | "book" | "generic"}
+Determine the type based on the recommendation content: use "invite" for guest-related tasks, "book" for reservations or service bookings, and "generic" for other tasks.
+
+Context:
+<recommendation>: ${JSON.stringify(recommendation)}
+
+Example of Expected Output:
+Given the <recommendation>: {
+    title: "Its All Good Catering",
+    description:
+      "Full-service wedding catering with customizable menus and exceptional service.",
+    bookingLink: "https://www.itsallgoodcatering.net/weddings",
+    images: [
+      "https://www.bing.com/images/search?view=detailV2&ccid=4%2b4BqG00&id=4CE2F6ADCFCBA134E231F9D7B84A814F9ACC5169&thid=OIP.4-4BqG00UYhOodM5lkw1hQHaGA&mediaurl=https%3a%2f%2fle-cdn.hibuwebsites.com%2f5009ff8d35724935878134f2dc31380c%2fdms3rep%2fmulti%2fopt%2fpiggy-1920w.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.e3ee01a86d3451884ea1d339964c3585%3frik%3daVHMmk%252bBSrjX%252bQ%26pid%3dImgRaw%26r%3d0&exph=1559&expw=1920&q=it+s+all+good+catering&FORM=IRPRST&ck=D4DAFF5B80A119C83C50A1C270CE4167&selectedIndex=17&itb=0&ajaxhist=0&ajaxserp=0",
+    ],
+    price: "2000",
+    date: "2023-12-15",
+    contactInfo: {
+      phone: "(206) 339-0313",
+    },
+    justification:
+      "Highly rated catering service known for quality and reliability.",
+}
+the output should be:
+  {todo: "Book Its All Good Catering for wedding catering services. Contact them at (206) 339-0313 or visit https://www.itsallgoodcatering.net/weddings to make a reservation.", type: "book"}
+`;
+  return todoPrompt;
+};
 
 export const getEventTypePrompt = `You are a highly intelligent and helpful assistant.
 
