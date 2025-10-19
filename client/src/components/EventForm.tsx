@@ -27,14 +27,23 @@ function EventForm({
   const [month, setMonth] = useState<string>('');
   const [day, setDay] = useState<string>('');
   const [year, setYear] = useState<string>('');
-  const [priceRange, setPriceRange] = useState<number>(500000);
-  // const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  // const [colorPalette, setColorPalette] = useState<string[]>(['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF']);
-  // const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [priceRange, setPriceRange] = useState<number>(100000);
 
   // Generate array of years (current year to 5 years ahead)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear + i);
+
+  useEffect(() => {
+    if (
+    eventData.eventType !== "" &&
+    eventData.date.toString() !== new Date().toString() &&
+    eventData.location !== "" &&
+    eventData.price !== "" &&
+    eventData.attendees !== "") {
+      // get the features based on the filled in info
+      getFeatures(eventData);
+    }
+  }, [eventData, getFeatures])
 
   // Handle date changes and update parent component
   const handleDateChange = (newMonth: string, newDay: string, newYear: string) => {
@@ -54,19 +63,6 @@ function EventForm({
     }
   };
 
-  useEffect(() => {
-    if (
-    eventData.eventType != "" &&
-    eventData.date != new Date() &&
-    eventData.location != "" &&
-    eventData.price != "" &&
-    eventData.attendees != "") {
-      // get the features based on the filled in info
-      getFeatures(eventData);
-    }
-
-  }, [eventData])
-
   // Handle price range change
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -82,11 +78,12 @@ function EventForm({
     return `${price}`;
   };
 
-
-console.log("EventForm props:", {
+  console.log("EventForm props:", {
     eventData,
     possibleFeatures,
+    possibleFeaturesLength: possibleFeatures.length,
     selectedFeatures,
+    selectedFeaturesLength: selectedFeatures.length,
     lockInEvent,
     getFeatures,
     updateEvent,
@@ -240,19 +237,18 @@ console.log("EventForm props:", {
       </div>
 
       {/* Left Image & Date Selection */}
-      {/* CHANGES START HERE */}
       <div
         style={{
-          display: 'flex',                    // Added: Creates horizontal layout
+          display: 'flex',
           width: '100vw',
           paddingTop: '150px',
           marginLeft: '-8px',
-          gap: '100px',                       // Added: Space between image and content
-          alignItems: 'flex-start',           // Added: Aligns items at the top
+          gap: '100px',
+          alignItems: 'flex-start',
         }}
       >
         {/* Wrapped image in its own div */}
-        <div style={{ flexShrink: 0 }}>      {/* Added wrapper with flexShrink: 0 */}
+        <div style={{ flexShrink: 0 }}>
           <img
             src="https://img.freepik.com/premium-photo/elegant-wedding-background-design_1287624-42710.jpg"
             alt="Wedding background"
@@ -262,7 +258,6 @@ console.log("EventForm props:", {
               objectFit: 'cover',
               objectPosition: '100% 40%',
               display: 'block',
-              // Removed: transformOrigin and flexShrink from here
             }}
           />
         </div>
@@ -272,10 +267,10 @@ console.log("EventForm props:", {
           {/* Date Question Text */}
           <div
             style={{
-              textAlign: 'center',            // Changed: from left to center
-              fontSize: '40px',               // Changed: from 32px to 40px
-              fontWeight: '300',              // Changed: from 'normal' to '300'
-              // Removed: position, left, marginTop, paddingLeft, width
+              textAlign: 'center',
+              fontSize: '40px',
+              fontWeight: '300',   
+              marginRight: '100px',
             }}
           >
             <h1 className="event-form-question-text" style={{ margin: 0, fontWeight: '300' }}>When will the event take place?</h1>
@@ -284,12 +279,11 @@ console.log("EventForm props:", {
           {/* Date Dropdowns Container */}
           <div
             style={{
-              marginTop: '30px',              // Changed: from no marginTop
+              marginTop: '30px',
               display: 'flex',
               gap: '20px',
               alignItems: 'center',
-              justifyContent: 'center',       // Added: centers the dropdowns
-              // Removed: position, left
+              justifyContent: 'center',
             }}
           >
           {/* Month Dropdown */}
@@ -302,6 +296,7 @@ console.log("EventForm props:", {
               fontSize: '18px',
               borderRadius: '100px',
               cursor: 'pointer',
+              marginRight: '100px',
             }}
             value={month}
             onChange={(e) => handleDateChange(e.target.value, day, year)}
@@ -331,6 +326,7 @@ console.log("EventForm props:", {
               fontSize: '18px',
               borderRadius: '100px',
               cursor: 'pointer',
+              marginRight: '100px',
             }}
             value={day}
             onChange={(e) => handleDateChange(month, e.target.value, year)}
@@ -353,6 +349,7 @@ console.log("EventForm props:", {
               fontSize: '18px',
               borderRadius: '100px',
               cursor: 'pointer',
+              marginRight: '100px',
             }}
             value={year}
             onChange={(e) => handleDateChange(month, day, e.target.value)}
@@ -373,6 +370,7 @@ console.log("EventForm props:", {
               textAlign: 'center',
               fontSize: '40px',
               fontWeight: '300',
+              marginRight: '100px',
             }}
           >
             <h1 className="event-form-question-text" style={{ margin: 0, fontWeight: '300' }}>What is our price range?</h1>
@@ -425,6 +423,7 @@ console.log("EventForm props:", {
               textAlign: 'center',
               fontSize: '40px',
               fontWeight: '300',
+              marginRight: '100px',
             }}
           >
             <h1 className="event-form-question-text" style={{ margin: 0, fontWeight: '300' }}>Where will the event take place?</h1>
@@ -441,6 +440,7 @@ console.log("EventForm props:", {
                 borderRadius: '100px',
                 cursor: 'pointer',
                 border: 'none',
+                marginRight: '100px',
               }}
               value={eventData.location || ''}
               onChange={(e) => updateEvent({ ...eventData, location: e.target.value })}
@@ -460,12 +460,140 @@ console.log("EventForm props:", {
           </div>
         </div>
 
+        {/* Attendance Section */}
+        <div style={{ marginTop: '80px' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              fontSize: '40px',
+              fontWeight: '300',
+              marginRight: '100px',
+            }}
+          >
+            <h1 className="event-form-question-text" style={{ margin: 0, fontWeight: '300' }}>How many guests are attending?</h1>
+          </div>
+
+          <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center' }}>
+            <select
+              style={{
+                width: '600px',
+                color: 'white',
+                backgroundColor: '#4B3831',
+                padding: '15px 25px',
+                fontSize: '18px',
+                borderRadius: '100px',
+                cursor: 'pointer',
+                border: 'none',
+                marginRight: '100px',
+              }}
+              value={eventData.attendees || ''}
+              onChange={(e) => updateEvent({ ...eventData, attendees: e.target.value })}
+            >
+              <option value="">Please select one</option>
+              <option value="1-10">1-10 guests</option>
+              <option value="11-20">11-20 guests</option>
+              <option value="21-30">21-30 guests</option>
+              <option value="31-40">31-40 guests</option>
+              <option value="41-50">41-50 guests</option>
+              <option value="51+">51+ guests</option>
+            </select>
+          </div>
+        </div>
         </div>  {/* Closes date section wrapper */}
       </div>      {/* Closes flex container */}
-      {/* CHANGES END HERE */}
+
+      {/* Feature Selection Section - Always show grid */}
+      <div style={{ marginTop: '150px', textAlign: 'center', paddingBottom: '100px' }}>
+        <h2 style={{ 
+          fontSize: '40px', 
+          fontWeight: '300',
+          marginBottom: '40px',
+          fontFamily: 'KyivType, serif'
+        }}>
+          Which features would you like at your event?
+        </h2>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 200px)',
+          gap: '20px',
+          justifyContent: 'center',
+          marginBottom: '60px'
+        }}>
+          {/* Display all possible features in a 4x4 grid, or empty cells if no features yet */}
+          {Array.from({ length: 16 }).map((_, index) => {
+            const feature = possibleFeatures[index];
+            
+            return (
+              <div
+                key={`feature-${index}`}
+                style={{
+                  backgroundColor: feature ? '#EFD7D5' : '#D29C9A',
+                  borderRadius: '50px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '60px',
+                  position: 'relative',
+                  cursor: feature ? 'pointer' : 'default',
+                  border: '2px solid transparent',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  if (feature) {
+                    e.currentTarget.style.borderColor = '#D29C9A';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (feature) {
+                    e.currentTarget.style.borderColor = 'transparent';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }
+                }}
+              >
+                <span style={{ 
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  color: feature ? 'black' : '#D29C9A'
+                }}>
+                  {feature || ''}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Submit Button - Always visible */}
+        <button
+          onClick={() => lockInEvent(eventData)}
+          style={{
+            backgroundColor: '#D29C9A',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50px',
+            padding: '15px 60px',
+            fontSize: '18px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            marginBottom: '80px'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#C08B89';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#D29C9A';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          Submit
+        </button>
+      </div>
     </div>
   );
 }
-
 
 export default EventForm;
