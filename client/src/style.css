@@ -305,3 +305,173 @@
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
+/* SpecificTodo.css */
+.specific-todo-container {
+  flex: 1;
+  height: 100vh;
+  background: linear-gradient(180deg, #fdfbfb 0%, #faf7f6 100%);
+  overflow-y: auto;
+  font-family: "Georgia", "Times New Roman", serif;
+}
+
+.specific-todo-container.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-state svg {
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 18px;
+  color: #b8a5a3;
+  font-style: italic;
+}
+
+.todo-detail-header {
+  padding: 40px 50px 30px;
+  background: white;
+  border-bottom: 1px solid #f0e8e6;
+}
+
+.todo-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #faf6f5;
+  border-radius: 20px;
+  color: #8b6b69;
+  font-size: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #f0e8e6;
+}
+
+.todo-type-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.todo-detail-title {
+  font-family: "Playfair Display", "Georgia", serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: #4a4038;
+  margin: 0;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+}
+
+.todo-detail-content {
+  padding: 40px 50px;
+}
+
+.detail-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-family: "Playfair Display", "Georgia", serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #6b5b5b;
+  margin: 0 0 15px 0;
+  letter-spacing: 0.5px;
+}
+
+.description-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #5a4a48;
+  margin: 0;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #f0e8e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #4a4038;
+  background: white;
+  border: 1px solid #e8dcd9;
+  border-radius: 12px;
+  font-family: "Georgia", "Times New Roman", serif;
+  resize: vertical;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.notes-textarea:focus {
+  outline: none;
+  border-color: #d4a5a5;
+  box-shadow: 0 4px 12px rgba(212, 165, 165, 0.1);
+}
+
+.notes-textarea::placeholder {
+  color: #c4b5b3;
+  font-style: italic;
+}
+
+.feature-tag {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #efd8d6 0%, #f5e5e3 100%);
+  color: #6b5b5b;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.todo-detail-footer {
+  padding: 30px 50px 50px;
+}
+
+.complete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px 40px;
+  background: #efd8d6;
+  color: #6b5b5b;
+  border: none;
+  border-radius: 50px;
+  font-size: 18px;
+  font-family: "Georgia", "Times New Roman", serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.complete-button:hover {
+  transform: scale(1.02);
+  background: #e8cbc9;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.complete-button.completed {
+  background: #d4a5a5;
+  color: white;
+}
+
+.complete-button.completed:hover {
+  background: #c99591;
+}
