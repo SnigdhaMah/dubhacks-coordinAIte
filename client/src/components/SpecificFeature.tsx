@@ -61,15 +61,6 @@ export default function SpecificFeature({
   onSendMessage,
   onConfirm,
 }: SpecificFeatureProps) {
-  console.log(
-    "SpecificFeature component rendered with props:",
-    feature,
-    onSelectedRecommneded,
-    messages,
-    onSendMessage,
-    onConfirm
-  );
-
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   if (!feature) {
@@ -77,7 +68,6 @@ export default function SpecificFeature({
   }
 
   const handleRecommendationClick = (rec: Recommendation) => {
-    console.log("handleRecommendationClick")
     const itemKey = rec.title;
 
     if (selectedItem === itemKey) {
@@ -87,7 +77,6 @@ export default function SpecificFeature({
       // Select the new item (replacing any previous selection)
       setSelectedItem(itemKey);
     }
-
     onSelectedRecommneded(rec);
   };
 

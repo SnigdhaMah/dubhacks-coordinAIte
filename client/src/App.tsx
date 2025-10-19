@@ -146,36 +146,32 @@ function App() {
 
   const onSelectRecommendedFeature = async (recommendation: Recommendation) => {
     try {
-      if (!currFeature || currFeature == null) {
-        alert("currFeature not set!")
-        setCurrFeature({uid:'1',
-        featureTitle: 'curre feature not set',
-        selected: null,
-        recommended: []})
-        // return;
-      }
+      // update feature index
+      const updatedFeatureIndex = featureIndex.map((feature) => {
+        if (feature.uid === currFeature.uid) {
+          return {
+            ...feature,
+            selected: recommendation,
+          };
+        } else {
+          return feature;
+        }
+      });
+      setFeatureIndex(updatedFeatureIndex);
+
       const resp = await recommendationClicked(
         currFeature.featureTitle,
         recommendation
       );
+      alert(JSON.stringify(resp))
       if (resp) {
         console.log("recieved response from clicking recs")
         // update todos
         setTodos(resp);
-        // update feature index
-        const updatedFeatureIndex = featureIndex.map((feature) => {
-          if (feature.uid === currFeature.uid) {
-            return {
-              ...feature,
-              selected: recommendation,
-            };
-          } else {
-            return feature;
-          }
-        });
-        setFeatureIndex(updatedFeatureIndex);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log("something went wrong" + error)
+    }
   };
 
   // the user has confirmed their selections in SpecificFeature page

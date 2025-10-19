@@ -166,7 +166,7 @@ export const recommendationClicked = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ feature: feature, recommendation: clickedRec }),
+    body: JSON.stringify({ feature, clickedRec }),
   });
   return response.json().then((data) => data.todos as TodoType[]);
 };

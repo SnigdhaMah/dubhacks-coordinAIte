@@ -36,8 +36,8 @@ app.get("/api/generateImage", generateImage);
 app.post("/api/chatResp", chatResp);
 
 // send new Todo to server
-app.post("api/updateTodo", updateTodo);
+app.post("/api/updateTodo", updateTodo);
 
-app.post("api/recommendationClicked", recommendationClicked);
+app.post("/api/recommendationClicked", recommendationClicked);
 
 app.listen(port, () => console.log(`Server listening on ${port}`));

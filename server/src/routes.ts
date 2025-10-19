@@ -86,7 +86,7 @@ type ChatbotResponse = Response<
   | { error: string }
 >;
 
-type TodoListResponse = Response<{ newTodos: TodoType[] } | { error: string }>;
+type TodoListResponse = Response<{ todos: TodoType[] } | { error: string }>;
 
 type updateTodoRequest = Request<{}, {}, { feature: string; todo: TodoType }>;
 
@@ -470,7 +470,7 @@ export const recommendationClicked = async (
 ): Promise<TodoListResponse> => {
   const { feature, clickedRec } = req.body;
 
-  console.log("In recommendation Clicked");
+  console.log("rec clicked", feature, clickedRec);
   selectedFeatures.set(feature, clickedRec);
 
   const prompt = getTodoCreationPrompt(clickedRec);
@@ -498,7 +498,7 @@ export const recommendationClicked = async (
 
   console.log("Recommnedation clicked ai response loaded!");
   const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
-  console.log("it worked!");
+  console.log("it worked!" + jsonString);
   if (!jsonString) {
     return res.status(500).json({
       error: "No valid response from AI model",
@@ -521,13 +521,20 @@ export const recommendationClicked = async (
       completed: false,
       type: todoText.type,
     };
+
+    console.log("new todo, ", newTodo.todo)
     // for the clicked recommendation, generate expected todos and save them as a TodoType
     // into the todos map
     todos.set(feature, newTodo);
+    console.log("update map", todos);
 
-    const newTodosArray: TodoType[] = Array.from(todos.values());
+    const newTodosArray: TodoType[] = []
+    todos.forEach((todo) => {
+      newTodosArray.push(todo)
+    })
+    console.log("array", newTodosArray)
 
-    return res.json({ newTodos: newTodosArray });
+    return res.json({ todos: newTodosArray });
   } catch (error: any) {
     console.error("❌ Error in recommendationClicke:", error);
     return res.status(500).json({

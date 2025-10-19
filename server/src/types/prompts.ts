@@ -46,7 +46,8 @@ and current recommendations <currRecs> in your response.
 Return a list of three recommendations as a string array in the JSON format: 
 {recommendations: [{recommendation1}, {recommendation2}, {recommendation3}]}.
 The three recommendations MUST be unique and NOT already present in <currRecs> 
-and must be real world options that users can book or use for their event. All recommendations should have valid links and images.
+and must be real world options that users can book or use for their event. 
+All recommendations should have valid links and images with links online.
 THE RESPONSE FOR EACH FIELD MUST BE LESS THAN 150 CHARACTERS.
 
 Context:
