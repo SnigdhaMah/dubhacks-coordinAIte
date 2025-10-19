@@ -27,42 +27,41 @@ function EventForm({
   const [day, setDay] = useState<string>("");
   const [year, setYear] = useState<string>("");
   const [priceRange, setPriceRange] = useState<number>(100000);
+  const [isLoadingFeatures, setIsLoadingFeatures] = useState<boolean>(false);
   let calledServer = false;
 
   // Generate array of years (current year to 5 years ahead)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear + i);
 
-  useEffect(() => {
-    if (
-      !calledServer &&
+  // Check if all form fields are filled
+  const isFormComplete = () => {
+    return (
       eventData.eventType !== "" &&
       eventData.date.toString() !== new Date().toString() &&
       eventData.location !== "" &&
       eventData.price !== "" &&
       eventData.attendees !== ""
-    ) {
-      // get the features based on the filled in info
-      getFeatures(eventData);
-      calledServer = true;
-    }
-  }, [eventData]);
-
-  const callServer = () => {
-    if (
-      !calledServer &&
-      eventData.eventType !== "" &&
-      eventData.date.toString() !== new Date().toString() &&
-      eventData.location !== "" &&
-      eventData.price !== "" &&
-      eventData.attendees !== ""
-    ) {
-      // get the features based on the filled in info
-      alert(`calling with` + eventData);
-      getFeatures(eventData);
-      calledServer = true;
-    }
+    );
   };
+
+  useEffect(() => {
+    const fetchFeatures = async () => {
+      if (!calledServer && isFormComplete()) {
+        setIsLoadingFeatures(true);
+        try {
+          await getFeatures(eventData);
+          calledServer = true;
+        } catch (error) {
+          console.error("Error fetching features:", error);
+        } finally {
+          setIsLoadingFeatures(false);
+        }
+      }
+    };
+
+    fetchFeatures();
+  }, [eventData]);
 
   // Handle date changes and update parent component
   const handleDateChange = (
@@ -144,6 +143,31 @@ function EventForm({
             cursor: pointer;
             border: 3px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
+          @keyframes bounce {
+            0%, 80%, 100% {
+              transform: scale(0.8);
+              opacity: 0.5;
+            }
+            40% {
+              transform: scale(1.2);
+              opacity: 1;
+            }
+          }
+
+          @keyframes shimmer {
+            0% {
+              background-position: -1000px 0;
+            }
+            100% {
+              background-position: 1000px 0;
+            }
           }
         `}
       </style>
@@ -575,47 +599,11 @@ function EventForm({
                 <option value="51+">51+ guests</option>
               </select>
             </div>
-
-            {/* Force Get Features Button */}
-            <div
-              style={{
-                marginTop: "40px",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <button
-                onClick={() => callServer()}
-                style={{
-                  backgroundColor: "#EFD7D5",
-                  color: "#4B3831",
-                  border: "2px solid #D29C9A",
-                  borderRadius: "50px",
-                  padding: "12px 40px",
-                  fontSize: "16px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  marginRight: "100px",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#D29C9A";
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "#EFD7D5";
-                  e.currentTarget.style.color = "#4B3831";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
-              >
-                Get Feature Recommendations
-              </button>
-            </div>
           </div>
         </div>
       </div>
-      {/* Feature Selection Section - Show grid only if there are features */}
+
+      {/* Feature Selection Section */}
       <div
         style={{
           marginTop: "150px",
@@ -634,7 +622,123 @@ function EventForm({
           Which features would you like at your event?
         </h2>
 
-        {possibleFeatures.length > 0 || selectedFeatures.length > 0 ? (
+        {isLoadingFeatures ? (
+          // LOADING STATE
+          <div
+            style={{
+              padding: "80px 20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: "100px",
+                height: "100px",
+                marginBottom: "30px",
+              }}
+            >
+              {/* Outer spinning circle */}
+              <div
+                style={{
+                  position: "absolute",
+                  width: "100%",
+                  height: "100%",
+                  border: "4px solid #EFD7D5",
+                  borderTop: "4px solid #D29C9A",
+                  borderRadius: "50%",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
+              {/* Inner bouncing dots */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  display: "flex",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    backgroundColor: "#D29C9A",
+                    animation: "bounce 1.4s infinite ease-in-out",
+                    animationDelay: "-0.32s",
+                  }}
+                />
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    backgroundColor: "#D29C9A",
+                    animation: "bounce 1.4s infinite ease-in-out",
+                    animationDelay: "-0.16s",
+                  }}
+                />
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    backgroundColor: "#D29C9A",
+                    animation: "bounce 1.4s infinite ease-in-out",
+                  }}
+                />
+              </div>
+            </div>
+            <h3
+              style={{
+                fontSize: "28px",
+                fontWeight: "400",
+                color: "#4B3831",
+                marginBottom: "15px",
+              }}
+            >
+              Generating personalized features...
+            </h3>
+            <p
+              style={{
+                fontSize: "18px",
+                color: "#B8A5A3",
+                maxWidth: "500px",
+                lineHeight: "1.6",
+              }}
+            >
+              Our AI is analyzing your event details to recommend the perfect features for your occasion
+            </p>
+            {/* Shimmer effect bar */}
+            <div
+              style={{
+                marginTop: "40px",
+                width: "400px",
+                height: "4px",
+                backgroundColor: "#EFD7D5",
+                borderRadius: "2px",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  background:
+                    "linear-gradient(90deg, transparent, #D29C9A, transparent)",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+          </div>
+        ) : possibleFeatures.length > 0 || selectedFeatures.length > 0 ? (
+          // LOADED STATE WITH FEATURES
           <>
             <div
               style={{
@@ -702,7 +806,7 @@ function EventForm({
               })}
             </div>
 
-            {/* Submit Button - Show only when features are available */}
+            {/* Submit Button */}
             <button
               onClick={() => lockInEvent(eventData)}
               style={{
@@ -730,6 +834,7 @@ function EventForm({
             </button>
           </>
         ) : (
+          // EMPTY STATE - Form not complete
           <div
             style={{
               fontSize: "24px",
