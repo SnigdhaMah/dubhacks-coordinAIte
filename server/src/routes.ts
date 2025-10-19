@@ -204,7 +204,8 @@ export const getFeatureOptionRecs = async (
       eventData,
       selectedFeature,
       chatmsgs,
-      currRecs
+      currRecs,
+      eventFeatureImages
     );
     const resp = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -250,7 +251,6 @@ export const getFeatureOptionRecs = async (
       contents: prompt,
     });
     const jsonString = resp?.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log("it worked!");
     if (!jsonString) {
       return res.status(500).json({
         error: "No valid response from AI model",
@@ -261,6 +261,7 @@ export const getFeatureOptionRecs = async (
       const parsed = JSON.parse(jsonString); // <-- parse raw JSON
 
       console.log(parsed);
+      console.log(parsed.recommendations[0].images);
       const recommendations = parsed.recommendations;
 
       return res.json({ recommendations });
@@ -542,6 +543,120 @@ export const recommendationClicked = async (
     });
   }
 };
+
+
+
+
+// Event Feature Images - Verified Unsplash URLs
+export type FeatureImage = {
+  feature: string;
+  imageUrl: string;
+};
+
+const eventFeatureImages: FeatureImage[] = [
+  // Venue
+  {
+    feature: "Venue",
+    imageUrl: "https://images.unsplash.com/photo-1571268373914-e888c6dafeff?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470",
+  },
+  {
+    feature: "Venue",
+    imageUrl: "https://images.unsplash.com/photo-1721677337543-37b07e7e28b5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074",
+  },
+  {
+    feature: "Venue",
+    imageUrl: "https://images.unsplash.com/photo-1510076857177-7470076d4098?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1744",
+  },
+  // CAKE
+  {
+    feature: "Cake",
+    imageUrl: "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=800"
+  },
+  {
+    feature: "Cake",
+    imageUrl: "https://images.unsplash.com/photo-1588195538326-c5b1e5b311fe?w=800"
+  },
+  
+  // BALLOONS
+  {
+    feature: "Balloons",
+    imageUrl: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800"
+  },
+  {
+    feature: "Balloons",
+    imageUrl: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800"
+  },
+  
+  // CATERING / FOOD
+  {
+    feature: "Catering",
+    imageUrl: "https://images.unsplash.com/photo-1555244162-803834f70033?w=800"
+  },
+  {
+    feature: "Catering",
+    imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800"
+  },
+  
+  // DJ / MUSIC
+  {
+    feature: "DJ",
+    imageUrl: "https://images.unsplash.com/photo-1571266028243-d220c6eb9e14?w=800"
+  },
+  {
+    feature: "Music",
+    imageUrl: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800"
+  },
+  
+  // FLOWERS
+  {
+    feature: "Flowers",
+    imageUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800"
+  },
+  {
+    feature: "Flowers",
+    imageUrl: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800"
+  },
+  
+  // PHOTOGRAPHY
+  {
+    feature: "Photography",
+    imageUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800"
+  },
+  {
+    feature: "Photography",
+    imageUrl: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800"
+  },
+  
+  // DECORATIONS
+  {
+    feature: "Decorations",
+    imageUrl: "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=800"
+  },
+  {
+    feature: "Decorations",
+    imageUrl: "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=800"
+  },
+  
+  // LIGHTING
+  {
+    feature: "Lighting",
+    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800"
+  },
+  {
+    feature: "Lighting",
+    imageUrl: "https://images.unsplash.com/photo-1556035511-3168381ea4d4?w=800"
+  },
+  
+  // INVITATIONS
+  {
+    feature: "Invitations",
+    imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800"
+  },
+  {
+    feature: "Invitations",
+    imageUrl: "https://images.unsplash.com/photo-1542042161784-26ab9e041e89?w=800"
+  },
+];
 
 const events: string[] = [
   "Anniversary Party",

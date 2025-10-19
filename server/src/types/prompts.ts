@@ -1,4 +1,4 @@
-import { allFeatures } from "../routes";
+import { allFeatures, FeatureImage } from "../routes";
 import { ChatMessage } from "./chatType";
 import { EventType } from "./eventType";
 import { Recommendation } from "./featureType";
@@ -35,7 +35,8 @@ export const getFeatureOptionsPrompt = (
   eventData: EventType,
   selectedFeature: string,
   chatmsgs: ChatMessage[],
-  currRecs: Recommendation[]
+  currRecs: Recommendation[],
+  images: FeatureImage[]
 ) => {
   const featureOptionPrompt = `
   Instructions:
@@ -43,18 +44,18 @@ Your task is to provide specific recommendations for the selected feature <selec
 based on the event details and user preferences.
 Consider the event <eventData>, previous chat messages <chatmsgs>, 
 and current recommendations <currRecs> in your response.
-Return a list of three recommendations as a string array in the JSON format: 
-{recommendations: [{recommendation1}, {recommendation2}, {recommendation3}]}.
-The three recommendations MUST be unique and NOT already present in <currRecs> 
+Return a list of three recommendations. The three recommendations MUST be unique and NOT already present in <currRecs> 
 and must be real world options that users can book or use for their event. 
-All recommendations should have valid links and images with links online.
-THE RESPONSE FOR EACH FIELD MUST BE LESS THAN 150 CHARACTERS.
+All recommendations should have valid website links. 
+For each recommendation, pick one image url from <images> that best matched the recommendation title. Images suggested MUST
+be a part of the <images> list. THE RESPONSE FOR EACH FIELD MUST BE LESS THAN 150 CHARACTERS.
 
 Context:
 <eventData>: ${eventData}
 <selectedFeature>: ${selectedFeature}
 <chatmsgs>: ${JSON.stringify(chatmsgs)}
 <currRecs>: ${JSON.stringify(currRecs)}
+<images>: ${JSON.stringify(images)}
 
 Example of Expected Output:
 Given the <selectedFeature>: "Catering" for an eventType.eventType: "Wedding", chatmsgs: [], and currRecs: [],
@@ -64,9 +65,7 @@ the output should be:
     description:
       "Full-service wedding catering with customizable menus and exceptional service.",
     bookingLink: "https://www.itsallgoodcatering.net/weddings",
-    images: [
-      "https://www.bing.com/images/search?view=detailV2&ccid=4%2b4BqG00&id=4CE2F6ADCFCBA134E231F9D7B84A814F9ACC5169&thid=OIP.4-4BqG00UYhOodM5lkw1hQHaGA&mediaurl=https%3a%2f%2fle-cdn.hibuwebsites.com%2f5009ff8d35724935878134f2dc31380c%2fdms3rep%2fmulti%2fopt%2fpiggy-1920w.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.e3ee01a86d3451884ea1d339964c3585%3frik%3daVHMmk%252bBSrjX%252bQ%26pid%3dImgRaw%26r%3d0&exph=1559&expw=1920&q=it+s+all+good+catering&FORM=IRPRST&ck=D4DAFF5B80A119C83C50A1C270CE4167&selectedIndex=17&itb=0&ajaxhist=0&ajaxserp=0",
-    ],
+    images: ["https://images.unsplash.com/photo-1555244162-803834f70033?w=800"],
     price: "2000",
     date: ${eventData.date},
     contactInfo: {
@@ -78,8 +77,7 @@ the output should be:
     title: "Gourmet Bites Catering",
     description: "Elegant catering service specializing in wedding menus with fresh, local ingredients.",
     bookingLink: "https://www.gourmetbites.com/wedding-catering",
-    images: ["https://www.bing.com/images/search?view=detailV2&ccid=V%2fL6%2b%2f1W&id=1D6E3C8C1E4F4C6F5E8D3A7B9C6E4F2B8A9C3D4E&thid=OIP.V_L6_1Wj1KXGZ5jY5Y5Y5gHaHa&mediaurl=https%3a%2f%2fwww.gourmetbites.com%2fimages%2fwedding-catering.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.3e4e4e4e4e4e4
-%3frik%3dXxYyZzAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz%26pid%3dImgRaw%26r%3d0&exph=1200&expw=1600&q=gourmet+bites+catering&FORM=IRPRST&ck=E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0&selectedIndex=5&itb=0&ajaxhist=0&ajaxserp=0"],
+    images: ["https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800"],
     price: "2500",
     date: ${eventData.date},
     contactInfo: {
@@ -90,8 +88,7 @@ the output should be:
     title: "Elegant Events Catering",
     description: "Premium catering service offering gourmet wedding menus and impeccable service.",
     bookingLink: "https://www.eleganteventscatering.com/weddings",
-    images: ["https://www.bing.com/images/search?view=detailV2&ccid=AbCdEfGh&id=9A8B7C6D5E4F3G2H1I0J9K8L7M6N5O4P3Q2R1S0T&thid=OIP.AbCdEfGhIjKlMnOpQrStUvWxYz&mediaurl=https%3a%2f%2feleganteventscatering.com%2fimages%2fwedding-menu.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.1a2b3c4d5e
-%3frik%3dYyZzAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz%26pid%3dImgRaw%26r%3d0&exph=900&expw=1200&q=elegant+events+catering&FORM=IRPRST&ck=F1E2D3C4B5A697887766554433221100&selectedIndex=8&itb=0&ajaxhist=0&ajaxserp=0"],
+    images: ["https://images.unsplash.com/photo-1588195538326-c5b1e5b311fe?w=800"],
     price: "3000",
     date: ${eventData.date},
     contactInfo: {

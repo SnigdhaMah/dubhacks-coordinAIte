@@ -57,10 +57,6 @@ export default function FeatureGrid({
           <div className="feature-title-section">
             <h3 className="feature-title">{feature.featureTitle}</h3>
           </div>
-          
-          <div className="feature-action-section">
-            <p className="action-text">loading features... please don't leave</p>
-          </div>
         </div>
       ))}
       </div>
