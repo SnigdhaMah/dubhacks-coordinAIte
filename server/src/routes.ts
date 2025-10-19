@@ -4,12 +4,19 @@ import { ChatMessage } from "./types/chatType";
 import { Recommendation, FeatureType } from "./types/featureType";
 import { TodoType } from "./types/todoType";
 import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
+import {
+  getFeatureOptionsPrompt,
+  getFeatureSelectionPrompt,
+  systemPrompt,
+} from "./types/prompts";
+dotenv.config();
 
 // list of todos
 const todos = new Map<string, TodoType>();
 const selectedFeatures = new Map<string, Recommendation>();
 
-const EventData: EventType = {
+const eventData: EventType = {
   eventType: "",
   date: new Date(),
   location: "",
@@ -17,7 +24,9 @@ const EventData: EventType = {
   attendees: "0",
 };
 // The client gets the API key from the environment variable `GEMINI_API_KEY`.
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "",
+});
 
 // Require type checking of request body.
 // Request<Params, ResBody, ReqBody, ReqQuery>
@@ -102,10 +111,27 @@ export const getPossibleFeatures = async (
       });
     }
 
-    // TODO: call AI service to get feature recommendations based on the event Data
-    const recommendedFeatures: string[] = [];
+    // call AI service to get feature recommendations based on the event Data
+    const prompt = getFeatureSelectionPrompt(eventData);
+    const resp = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: prompt,
+    });
+    if (!resp?.text) {
+      return res.status(500).json({
+        error: "No text response from AI model" + resp,
+      });
+    } else if (!("recommended" in JSON.parse(resp.text))) {
+      return res.status(500).json({
+        error: "Invalid response format from AI model" + resp.text,
+      });
+    }
+    const recommendedFeatures: string[] = JSON.parse(resp.text).recommended;
 
-    // 4. Send response back to client
+    // Send response back to client
     return res.json({
       allFeatures,
       recommendedFeatures,
@@ -139,10 +165,31 @@ export const getFeatureOptionRecs = async (
         error: "Missing selected feature in request body",
       });
     }
-    console.log(chatmsgs, currRecs);
-    // call the AI to get three recommendations
-    const recommendations: Recommendation[] = [];
-    // TODO: ADD AI
+    const prompt = getFeatureOptionsPrompt(
+      eventData,
+      selectedFeature,
+      chatmsgs,
+      currRecs
+    );
+    const resp = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: prompt,
+    });
+    if (!resp?.text) {
+      return res.status(500).json({
+        error: "No text response from AI model" + resp,
+      });
+    } else if (!("recommendations" in JSON.parse(resp.text))) {
+      return res.status(500).json({
+        error: "Invalid response format from AI model" + resp.text,
+      });
+    }
+    const recommendations: Recommendation[] = JSON.parse(
+      resp.text
+    ).recommendations;
 
     // Send response back to client
     return res.json({ recommendations });
@@ -172,11 +219,11 @@ export const resetEventInfo = async (
   res: ResetResponse
 ) => {
   // clear the event data
-  EventData.eventType = "";
-  EventData.date = new Date();
-  EventData.location = "";
-  EventData.price = "";
-  EventData.attendees = "";
+  eventData.eventType = "";
+  eventData.date = new Date();
+  eventData.location = "";
+  eventData.price = "";
+  eventData.attendees = "";
   // clear the todos
   selectedFeatures.clear();
   todos.clear();
@@ -342,111 +389,51 @@ const events: string[] = [
   "Yoga Retreat",
 ];
 
-const allFeatures: string[] = [
-  // Event Basics
-  "Event Name",
-  "Event Type",
-  "Event Theme/Style",
-  "Event Date Suggestions",
-  "Event Duration",
-  "Indoor or Outdoor Recommendation",
-  "Location Suggestions (city, venue type)",
-
-  // Attendee Planning
-  "Estimated Guest Count",
-  "Seating Arrangement Ideas",
-  "RSVP Tracking Tools",
-  "Guest List Planning",
-  "Accessibility Considerations",
-
-  // Budget Guidance
-  "Budget Planning",
-  "Cost Estimations by Category",
-  "Vendor Cost Ranges",
-  "Suggested Budget Allocation",
-  "Low-Budget Event Tips",
-
-  // Vendor Recommendations (Digital Support Only)
-  "Catering Options & Styles",
-  "Cake Ideas & Designs",
-  "Beverage Options",
-  "Food Truck Ideas",
-  "Photographer/Videographer Suggestions",
-  "DJ/Band/Music Suggestions",
-  "Balloon Decor Ideas",
-  "Florist/Decoration Styles",
-  "Lighting Style Inspiration",
-  "Table Setup Ideas",
-  "Chair & Table Rental Types",
-  "Clown or Children’s Entertainment Suggestions",
-  "Magician/Performer Ideas",
-  "Photo Booth Ideas",
-
-  // Entertainment & Programming
-  "Entertainment Options by Event Type",
-  "Playlist Suggestions",
-  "Stage/Performance Ideas",
-  "MC/Host Guidelines",
-  "Games and Activities",
-  "Kids' Activities",
-  "Interactive Booth Ideas",
-
-  // Digital Tools & Technology
-  "Event Website Builder Suggestions",
-  "Online Invitations Tools",
-  "Ticketing Platforms",
-  "RSVP/Registration Platforms",
-  "Event App Recommendations",
-  "Live Streaming Setup Tips",
-  "Photo Sharing Tools",
-  "Check-in Tools",
-  "QR Code Usage Ideas",
-
-  // Visual Design & Aesthetics
-  "Color Palette Generator",
-  "Theme Inspiration",
-  "Decoration Ideas",
-  "Centerpiece Ideas",
-  "Signage Style Suggestions",
-  "Backdrop & Photo Area Inspiration",
-  "Balloon Arch/Bouquet Inspiration",
-
-  // Marketing & Promotion
-  "Event Branding Tips",
-  "Hashtag Suggestions",
-  "Social Media Promotion Tips",
-  "Email Campaign Templates",
-  "Flyer and Poster Template Recommendations",
-  "Countdown and Hype Strategies",
-
-  // Hospitality Suggestions
-  "Welcome Gift Ideas",
-  "Guest Accommodation Ideas",
-  "Transportation Ideas for Guests",
-  "Food Allergy Planning Tips",
-
-  // Schedule & Planning
-  "Event Itinerary Generator",
-  "Timeline Planning Tools",
-  "Checklists & To-Dos",
-  "Setup/Teardown Schedule Template",
-
-  // Sustainability
-  "Eco-Friendly Vendor Suggestions",
-  "Zero-Waste Tips",
-  "Sustainable Decor Ideas",
-  "Digital Invitation Tools",
-
-  // Post-Event
-  "Thank You Message Templates",
-  "Feedback Survey Tools",
-  "Photo/Video Sharing Platforms",
-  "Highlight Reel Ideas",
-
-  // Miscellaneous
-  "Pet-Friendly Event Tips",
-  "Seasonal Theme Suggestions",
-  "Cultural or Religious Custom Tips",
-  "Weather Contingency Ideas",
-  "Mood Board Generator",
+export const allFeatures: string[] = [
+  "Alcohol Bar",
+  "Backdrop",
+  "Balloons",
+  "Banner",
+  "Buffet",
+  "Cake",
+  "Caterer",
+  "Centerpieces",
+  "Champagne Toast",
+  "Clown",
+  "Cocktail Bar",
+  "Dance Floor",
+  "Decorations",
+  "DJ",
+  "Face Painting",
+  "Fireworks",
+  "Flowers",
+  "Food Truck",
+  "Games",
+  "Gift Table",
+  "Guestbook",
+  "Inflatables",
+  "Invitation Cards",
+  "Karaoke",
+  "Lighting",
+  "Live Band",
+  "Magician",
+  "Makeup Artist",
+  "MC",
+  "Menu Cards",
+  "Music Playlist",
+  "Party Favors",
+  "Photo Booth",
+  "Photographer",
+  "Seating Arrangement",
+  "Security Staff",
+  "Sound System",
+  "Stage",
+  "Table Settings",
+  "Tent",
+  "Theme Decorations",
+  "Video Montage",
+  "Videographer",
+  "Waitstaff",
+  "Welcome Sign",
+  "Wine Bar",
 ];
